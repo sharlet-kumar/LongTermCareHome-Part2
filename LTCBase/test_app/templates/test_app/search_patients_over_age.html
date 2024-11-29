@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Patients Over Age</title>
+</head>
+<body>
+    <h1>Search Patients Over Age</h1>
+    
+    <!-- Search Form -->
+    <form method="POST">
+        {% csrf_token %}
+        <label for="age">Enter Age:</label>
+        <input type="number" id="age" name="age" required>
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Results Section -->
+    {% if age is not None %}
+        <h2>Patients Over {{ age }} Years Old</h2>
+        {% if patients %}
+            <table>
+                <tr>
+                    <th>Patient ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Date of Birth</th>
+                </tr>
+                {% for patient in patients %}
+                <tr>
+                    <td>{{ patient.patient_id }}</td>
+                    <td>{{ patient.first_name }}</td>
+                    <td>{{ patient.last_name }}</td>
+                    <td>{{ patient.date_of_birth }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No patients found over {{ age }} years old.</p>
+        {% endif %}
+    {% endif %}
+</body>
+</html>
