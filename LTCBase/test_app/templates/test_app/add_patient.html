@@ -1,0 +1,14 @@
+<form method="POST">
+    {% csrf_token %}
+    <label>First Name:</label><input type="text" name="first_name"><br>
+    <label>Last Name:</label><input type="text" name="last_name"><br>
+    <label>Date of Birth:</label><input type="date" name="date_of_birth"><br>
+    <label>Sex:</label>
+    <select name="sex">
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+    </select><br>
+    <label>Height:</label><input type="number" name="height"><br>
+    <label>Weight:</label><input type="number" name="weight"><br>
+    <button type="submit">Add Patient</button>
+</form>
