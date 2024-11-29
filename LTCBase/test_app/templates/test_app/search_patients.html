@@ -1,0 +1,32 @@
+<h1>Search Patients</h1>
+<form method="get">
+    {{ form.as_p }}
+    <button type="submit">Search</button>
+</form>
+
+<h2>Results</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Patient ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Date of Birth</th>
+            <th>Sex</th>
+            <th>Height</th>
+            <th>Weight</th>
+            <th>Address ID</th>
+            <th>DNR</th>
+            <th>Insurance Check</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+            <tr>
+                {% for field in result %}
+                    <td>{{ field }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
