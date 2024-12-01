@@ -55,8 +55,8 @@ ROOT_URLCONF = 'LTCBase.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [],  # Add global template directories if necessary
+        'APP_DIRS': True,  # This must be True
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -67,6 +67,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'LTCBase.wsgi.application'
 
@@ -79,7 +80,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'longtermcare',
         'USER': 'root',
-        'PASSWORD': 'Godzilla20!',
+        'PASSWORD': 'EandS2024!',
         'HOST': 'localhost',  # Use '127.0.0.1' or the server IP if not localhost
         'PORT': '3306',       # Default MySQL port
     }

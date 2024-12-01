@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Medications</title>
+</head>
+<body>
+    <h1>Medications</h1>
+
+    <!-- Filter Dropdown -->
+    <form method="GET">
+        <label for="condition">Filter by Condition:</label>
+        <select name="condition" id="condition" onchange="this.form.submit()">
+            <option value="">--Select Condition--</option>
+            {% for condition in health_conditions %}
+                <option value="{{ condition }}" {% if condition == selected_condition %}selected{% endif %}>
+                    {{ condition }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <!-- Medication List -->
+    <ul>
+        {% for medication in medications %}
+            <li>
+                <strong>{{ medication.medName }}</strong> ({{ medication.medID }})
+                <br><em>Drug Class:</em> {{ medication.drugClass }}
+                <br><em>Admin Details:</em> {{ medication.adminDetails }}
+                <br><em>Storage Details:</em> {{ medication.storageDetails }}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Medication</title>
+</head>
+<body>
+    <h1>Add Medication</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Medication ID:</label><input type="text" name="medID"><br>
+        <label>Medication Name:</label><input type="text" name="medName"><br>
+        <label>Drug Class:</label><input type="text" name="drugClass"><br>
+        <label>Administration Details:</label><input type="text" name="adminDetails"><br>
+        <label>Storage Details:</label><input type="text" name="storageDetails"><br>
+        <button type="submit">Add Medication</button>
+    </form>
+</body>
+</html>
