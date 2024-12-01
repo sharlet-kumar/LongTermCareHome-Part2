@@ -1,112 +1,31 @@
-<h1>Search Patients</h1>
-<form method="get">
-    {{ form.as_p }}
-    <label for="weight">Patient ID:</label>
-    <input type="number" name="id" id="id"><br>
+<form method="post">
+    {% csrf_token %}
+    <label for="search_attribute">Search by:</label>
+    <select name="search_attribute" id="search_attribute">
+      <option value="weight" {% if search_attribute == 'weight' %} selected {% endif %}>Weight</option>
+      <option value="height" {% if search_attribute == 'height' %} selected {% endif %}>Height</option>
+      <option value="firstName" {% if search_attribute == 'firstName' %} selected {% endif %}>First Name</option>
+      <option value="lastName" {% if search_attribute == 'lastName' %} selected {% endif %}>Last Name</option>
+      <option value="dateOfBirth" {% if search_attribute == 'dateOfBirth' %} selected {% endif %}>Date of Birth</option>
+      <option value="sex" {% if search_attribute == 'sex' %} selected {% endif %}>Sex</option>
+      <option value="dnr" {% if search_attribute == 'dnr' %} selected {% endif %}>DNR</option>
+      <option value="insuranceCheck" {% if search_attribute == 'insuranceCheck' %} selected {% endif %}>Insurance Check</option>
+    </select>
+    
+    <label for="search_value">Search value:</label>
+    <input type="text" name="search_value" id="search_value" value="{{ search_value }}">
+    
     <button type="submit">Search</button>
-</form>
-
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f9f9f9;
-        color: #333;
-        margin: 0;
-        padding: 0;
-        line-height: 1.6;
-    }
-
-    h1 {
-        text-align: center;
-        margin-top: 20px;
-        color: #4CAF50;
-    }
-
-    form {
-        width: 60%;
-        margin: 20px auto;
-        padding: 20px;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    form label {
-        font-weight: bold;
-        display: block;
-        margin-bottom: 8px;
-    }
-
-    form input, form button {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 16px;
-    }
-
-    form input:focus, form button:focus {
-        border-color: #4CAF50;
-        outline: none;
-    }
-
-    form button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-
-    form button:hover {
-        background-color: #45a049;
-    }
-
-    .return-home {
-        display: block;
-        width: 150px;
-        margin: 20px auto;
-        padding: 10px;
-        text-align: center;
-        background-color: #2196F3;
-        color: white;
-        text-decoration: none;
-        font-size: 16px;
-        border-radius: 5px;
-    }
-
-    .return-home:hover {
-        background-color: #1976D2;
-    }
-</style>
-
- <!-- Return to Home Button -->
- <a href="/" class="return-home">Return to Home</a>
-
-<h2>Results</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Patient ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Date of Birth</th>
-            <th>Sex</th>
-            <th>Height</th>
-            <th>Weight</th>
-            <th>Address ID</th>
-            <th>DNR</th>
-            <th>Insurance Check</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for result in results %}
-            <tr>
-                {% for field in result %}
-                    <td>{{ field }}</td>
-                {% endfor %}
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+  </form>
+  
+  {% if patients %}
+    <h2>Search Results:</h2>
+    <ul>
+      {% for patient in patients %}
+        <li>{{ patient.firstName }} {{ patient.lastName }} - {{ patient.weight }} kg - {{ patient.dateOfBirth }} </li>
+      {% endfor %}
+    </ul>
+  {% elif search_value %}
+    <p>No results found for "{{ search_value }}"</p>
+  {% endif %}
+  
