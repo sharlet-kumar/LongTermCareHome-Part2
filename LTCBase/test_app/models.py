@@ -1,18 +1,20 @@
 from django.db import models
 
 class Patient(models.Model):
-    patient_id = models.CharField(max_length=10, primary_key=True)
-    first_name = models.CharField(max_length=15)
-    last_name = models.CharField(max_length=15)
-    date_of_birth = models.DateField()
+    patientID = models.CharField(max_length=10, primary_key=True)
+    firstName = models.CharField(max_length=15)
+    lastName = models.CharField(max_length=15)
+    dateOfBirth = models.DateField()
     sex = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')])
     height = models.SmallIntegerField()
     weight = models.SmallIntegerField()
     dnr = models.BooleanField()
-    insurance_check = models.BooleanField()
-
+    insuranceCheck = models.BooleanField()
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.firstName} {self.lastName}"
+    
+    class Meta:
+        db_table = 'Patient'  # Exact table name in the external database
     
 class Medication(models.Model):
     medID = models.CharField(max_length=10, primary_key=True)
@@ -24,20 +26,26 @@ class Medication(models.Model):
     def __str__(self):
         return self.medID
     
+    class Meta:
+        db_table = 'Medication'  # Exact table name in the external database
+    
+from django.db import models
+
 class MedsTreatCondition(models.Model):
     medID = models.ForeignKey(
-        'Medication',  # Reference the Medication model
-        on_delete=models.CASCADE,  # Delete MedsTreatCondition records when the Medication is deleted
-        related_name='conditions'  # Allows reverse querying, e.g., medication.conditions.all()
+        'Medication',
+        on_delete=models.CASCADE,
+        db_column='medID'
     )
-    conditionName = models.CharField(max_length=30)  # A varchar field for the condition name
+    conditionName = models.CharField(
+        max_length=30,
+        db_column='conditionName'
+    )
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['medID', 'conditionName'], name='unique_med_condition')  # Primary key equivalent
-        ]
+        db_table = 'MedsTreatCondition'  # Map to the existing table
+        managed = False  # Prevent Django from managing the schema
+        unique_together = ('medID', 'conditionName')  # Composite key
 
     def __str__(self):
         return f"{self.medID} - {self.conditionName}"
-    
-    

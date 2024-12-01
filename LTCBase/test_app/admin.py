@@ -9,7 +9,7 @@ admin.site.register(Patient)
 class MedsTreatConditionAdmin(admin.ModelAdmin):
     list_display = ('medID', 'conditionName')  # Columns to display
     list_filter = ('conditionName',)  # Enable filtering by condition name
-    search_fields = ('medID__medName', 'conditionName')  # Add search by medication name and condition name
+    search_fields = ('medID', 'conditionName')  # Add search by medication name and condition name
 
 class MedsTreatConditionInline(admin.TabularInline):
     model = MedsTreatCondition
@@ -19,5 +19,4 @@ class MedsTreatConditionInline(admin.TabularInline):
 class MedicationAdmin(admin.ModelAdmin):
     inlines = [MedsTreatConditionInline]  # Add conditions inline
     list_display = ('medID', 'medName', 'drugClass')
-    list_filter = ('conditions__conditionName',)  # Enable filtering by condition name
     search_fields = ('medID', 'medName', 'drugClass')

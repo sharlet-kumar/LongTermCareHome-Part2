@@ -1,13 +1,9 @@
 from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404, redirect
-<<<<<<< HEAD
 from .models import Patient, MedsTreatCondition, Medication
-=======
-from .models import Patient
-
-from django.db import connection
->>>>>>> f1487cfb4344e9be544e574d14d919363ef32e27
 from datetime import date
+from django.utils.datastructures import MultiValueDictKeyError
+
 
 health_conditions = [
     'Hypertension', 'Diabetes', 'Asthma', 'Heart Disease', 'Alzheimers', 'Dementia', 'Depression',
@@ -23,15 +19,15 @@ def add_patient(request):
     if request.method == 'POST':
         try:
             Patient.objects.create(
-                patient_id=request.POST['patient_id'],
-                first_name=request.POST['first_name'],
-                last_name=request.POST['last_name'],
-                date_of_birth=request.POST['date_of_birth'],
+                patientID=request.POST['patientID'],
+                firstName=request.POST['firstName'],
+                lastName=request.POST['lastName'],
+                dateOfBirth=request.POST['dateOfBirth'],
                 sex=request.POST['sex'],
                 height=request.POST.get('height', 0),  # Default to 0 if not provided
                 weight=request.POST.get('weight', 0),  # Default to 0 if not provided
-                dnr=request.POST.get('dnr', False),  # Default to False if not checked
-                insurance_check=request.POST.get('insurance_check', False)  # Default to False
+                dnr=(request.POST.get('dnr') == 'on'),
+                insuranceCheck=(request.POST.get('insuranceCheck') == 'on')  # Default to False
             )
             return redirect('homepage')  # Redirect to homepage after adding
         except MultiValueDictKeyError as e:
@@ -41,25 +37,25 @@ def add_patient(request):
 
 # Update a patient
 def update_patient(request, patient_id):
-    patient = get_object_or_404(Patient, patient_id=patient_id)
+    patient = get_object_or_404(Patient, patientID=patient_id)
     if request.method == 'POST':
-        patient.first_name = request.POST['first_name']
-        patient.last_name = request.POST['last_name']
-        patient.date_of_birth = request.POST['date_of_birth']
+        patient.firstName = request.POST['firstName']
+        patient.lastName = request.POST['lastName']
+        patient.dateOfBirth = request.POST['dateOfBirth']
         patient.sex = request.POST['sex']
         patient.height = request.POST['height']
         patient.weight = request.POST['weight']
-        patient.dnr = request.POST.get('dnr', False)
-        patient.insurance_check = request.POST.get('insurance_check', False)
+        patient.dnr= (request.POST.get('dnr') == 'on')
+        patient.insuranceCheck=(request.POST.get('insuranceCheck') == 'on')
         patient.save()
-        return redirect('patient_list')
+        return render(request, 'test_app/update_patient.html', {'patient': patient})
     return render(request, 'test_app/update_patient.html', {'patient': patient})
 
 # Delete a patient
-def delete_patient(request, patient_id):
-    patient = get_object_or_404(Patient, patient_id=patient_id)
+def delete_patient(request, patientID):
+    patient = get_object_or_404(Patient, patientID=patientID)
     patient.delete()
-    return redirect('patient_list')
+    return redirect('test_app/patient_list')
 
 def search_patients_over_age(request):
     patients = None  # Initialize patients as None to handle the first load without a query
@@ -68,8 +64,8 @@ def search_patients_over_age(request):
         age = int(request.POST['age'])  # Get the age input from the form
         today = date.today()
         cutoff_date = today.replace(year=today.year - age)
-        patients = Patient.objects.filter(date_of_birth__lte=cutoff_date)  # Query patients over the specified age
-<<<<<<< HEAD
+        patients = Patient.objects.filter(dateOfBirth__lte=cutoff_date)  # Query patients over the specified age
+        
     return render(request, 'test_app/search_patients_over_age.html', {'patients': patients, 'age': age})
 
 def add_medication(request):
@@ -86,9 +82,9 @@ def add_medication(request):
 
 def add_condition(request):
     if request.method == 'POST':
-        med_id = request.POST['medID']
+        medID = request.POST['medID']
         condition_name = request.POST['conditionName']
-        medication = Medication.objects.get(medID=med_id)
+        medication = Medication.objects.get(medID=medID)
         MedsTreatCondition.objects.create(medID=medication, conditionName=condition_name)
         return redirect('add_condition')  # Redirect to the same page or another page
     medications = Medication.objects.all()  # Get all medications for the dropdown
@@ -102,7 +98,7 @@ def filter_medications(request):
     if selected_condition:
         medications = medications.filter(conditions__conditionName=selected_condition).distinct()
 
-    return render(request, 'filter_medications.html', {
+    return render(request, 'test_app/filter_medication.html', {
         'medications': medications,
         'health_conditions': health_conditions,  # Pass the list of conditions to the template
         'selected_condition': selected_condition,
@@ -122,50 +118,5 @@ def medications_or_conditions(request):
         'conditions': conditions,
         'health_conditions': health_conditions,
         'selected_condition': selected_condition,
+        'filter_medication': filter_medications,
     })
-=======
-    return render(request, 'search_patients_over_age.html', {'patients': patients, 'age': age})
-
-#Search a patient
-class PatientSearchForm(forms.Form):
-    search_term = forms.CharField(max_length=100, required=False, label='Search Patients')
-
-from django.shortcuts import render
-from .models import Patient
-from .forms import PatientSearchForm
-from django.db import connection
-
-def search_patients(request):
-    form = PatientSearchForm(request.GET or None)
-    results = []
-    if form.is_valid() and form.cleaned_data.get('search_term'):
-        search_term = form.cleaned_data['search_term']
-
-        # Using raw SQL (ensure it is safe from SQL injection):
-        query = """
-            SELECT * FROM test_app_patient
-            WHERE PatientID LIKE %s OR firstName LIKE %s OR lastName LIKE %s
-            OR DateOfBirth LIKE %s OR Sex LIKE %s OR Height LIKE %s OR Weight LIKE %s
-            OR AddressID LIKE %s OR DNR LIKE %s OR InsuranceCheck LIKE %s
-        """
-        search_pattern = f"%{search_term}%"
-        with connection.cursor() as cursor:
-            cursor.execute(query, [search_pattern] * 10)
-            results = cursor.fetchall()
-
-    context = {
-        'form': form,
-        'results': results,
-    }
-    return render(request, 'search_patients.html', context)
-
-from django.urls import path
-from . import views
-
-urlpatterns = [
-    path('search/', views.search_patients, name='search_patients'),
-]
-
-
-
->>>>>>> f1487cfb4344e9be544e574d14d919363ef32e27
