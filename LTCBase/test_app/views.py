@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Patient, MedsTreatCondition, Medication
 from datetime import date
 from django.utils.datastructures import MultiValueDictKeyError
+from django.http import HttpResponseRedirect
 
 
 health_conditions = [
@@ -36,20 +37,51 @@ def add_patient(request):
     return render(request, 'test_app/add_patient.html')
 
 # Update a patient
-def update_patient(request, patient_id):
-    patient = get_object_or_404(Patient, patientID=patient_id)
+def update_patient(request):
+    patient = None
+    message = None  # Variable to store both error and success messages
+
+    # Handle GET request
+    if request.method == 'GET':
+        patient_id = request.GET.get('id')  # Safely get the patient ID from GET parameters
+        if patient_id:
+            try:
+                patient = get_object_or_404(Patient, patientID=patient_id)
+            except:
+                message = f"No patient found with ID {patient_id}."
+        return render(request, 'test_app/update_patient.html', {'patient': patient, 'message': message})
+
+    # Handle POST request
     if request.method == 'POST':
-        patient.firstName = request.POST['firstName']
-        patient.lastName = request.POST['lastName']
-        patient.dateOfBirth = request.POST['dateOfBirth']
-        patient.sex = request.POST['sex']
-        patient.height = request.POST['height']
-        patient.weight = request.POST['weight']
-        patient.dnr= (request.POST.get('dnr') == 'on')
-        patient.insuranceCheck=(request.POST.get('insuranceCheck') == 'on')
+        patient_id = request.POST.get('id')  # Safely get the patient ID from POST data
+        if not patient_id:
+            return render(request, 'test_app/update_patient.html', {'message': 'Patient ID is missing'})
+
+        # Try to fetch and update the patient record
+        try:
+            patient = get_object_or_404(Patient, patientID=patient_id)
+        except:
+            message = f"No patient found with ID {patient_id}."
+            return render(request, 'test_app/update_patient.html', {'message': message})
+
+        # Update patient details
+        patient.firstName = request.POST.get('firstName', patient.firstName)
+        patient.lastName = request.POST.get('lastName', patient.lastName)
+        patient.dateOfBirth = request.POST.get('dateOfBirth', patient.dateOfBirth)
+        patient.sex = request.POST.get('sex', patient.sex)
+        patient.height = request.POST.get('height', patient.height)
+        patient.weight = request.POST.get('weight', patient.weight)
+        patient.dnr = request.POST.get('dnr') == 'on'
+        patient.insuranceCheck = request.POST.get('insuranceCheck') == 'on'
         patient.save()
-        return render(request, 'test_app/update_patient.html', {'patient': patient})
-    return render(request, 'test_app/update_patient.html', {'patient': patient})
+
+        # Set success message
+        message = f"Patient with ID {patient_id} successfully updated."
+        return render(request, 'test_app/update_patient.html', {'patient': patient, 'message': message})
+
+    # Render default form if no request data
+    return render(request, 'test_app/update_patient.html')
+
 
 # Delete a patient
 def delete_patient(request, patientID):
@@ -80,7 +112,7 @@ def add_medication(request):
         return redirect('/')  # Redirect to a desired page after submission
     return render(request, 'test_app/add_medication.html')
 
-def add_condition(request):
+"""def add_condition(request):
     if request.method == 'POST':
         medID = request.POST['medID']
         condition_name = request.POST['conditionName']
@@ -88,20 +120,24 @@ def add_condition(request):
         MedsTreatCondition.objects.create(medID=medication, conditionName=condition_name)
         return redirect('add_condition')  # Redirect to the same page or another page
     medications = Medication.objects.all()  # Get all medications for the dropdown
-    return render(request, 'test_app/add_condition.html', {'medications': medications})
+    return render(request, 'test_app/add_condition.html', {'medications': medications})"""
 
 def filter_medications(request):
-    selected_condition = request.GET.get('condition')  # Get the condition from the request
-    medications = Medication.objects.all()
+    selected_condition = request.GET.get('conditionName')  # Get the condition from the request
+    medications = Medication.objects.all()  # Initialize all medications
+    medstreatcondition = MedsTreatCondition.objects.all()  # Initialize all conditions
 
     # Filter medications by the selected condition
     if selected_condition:
-        medications = medications.filter(conditions__conditionName=selected_condition).distinct()
+        # Get all medIDs matching the selected condition
+        medIDs = medstreatcondition.filter(conditionName=selected_condition).values_list('medID', flat=True)
+        # Use the medIDs to filter medications
+        medications = medications.filter(medID__in=medIDs).distinct()
 
     return render(request, 'test_app/filter_medication.html', {
         'medications': medications,
-        'health_conditions': health_conditions,  # Pass the list of conditions to the template
         'selected_condition': selected_condition,
+        'health_conditions': health_conditions
     })
 
 def medications_or_conditions(request):

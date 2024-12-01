@@ -2,39 +2,173 @@
 <html>
 <head>
     <title>Update Patient</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        form {
+            width: 60%;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        form label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        form input, form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        form input:focus, form button:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        form button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #45a049;
+        }
+
+        .return-home {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            padding: 10px;
+            text-align: center;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .return-home:hover {
+            background-color: #1976D2;
+        }
+
+        .message {
+            width: 60%;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+    </style>
 </head>
 <body>
-    <h1>Update Patient Information</h1>
-    <form method="POST">
+    <h1>Update Patient</h1>
+
+    <!-- Return to Home Button -->
+    <a href="/" class="return-home">Return to Home</a>
+
+    <!-- Messages Section -->
+    {% if message %}
+        <div class="message {% if message_type == 'success' %}success{% elif message_type == 'error' %}error{% endif %}">
+            {{ message }}
+        </div>
+    {% endif %}
+
+    <!-- Search Form -->
+    <form method="GET">
         {% csrf_token %}
-        <label for="firstName">First Name:</label>
-        <input type="text" id="firstName" name="firstName" value="{{ patient.firstName }}"><br>
-
-        <label for="last_name">Last Name:</label>
-        <input type="text" id="lastName" name="lastName" value="{{ patient.lastName }}"><br>
-
-        <label for="dateOfBirth">Date of Birth:</label>
-        <input type="date" id="dateOfBirth" name="dateOfBirth" value="{{ patient.dateOfBirth }}"><br>
-
-        <label for="sex">Sex:</label>
-        <select id="sex" name="sex">
-            <option value="M" {% if patient.sex == "M" %}selected{% endif %}>Male</option>
-            <option value="F" {% if patient.sex == "F" %}selected{% endif %}>Female</option>
-        </select><br>
-
-        <label for="height">Height (cm):</label>
-        <input type="number" id="height" name="height" value="{{ patient.height }}"><br>
-
-        <label for="weight">Weight (kg):</label>
-        <input type="number" id="weight" name="weight" value="{{ patient.weight }}"><br>
-
-        <label for="dnr">DNR:</label>
-        <input type="checkbox" id="dnr" name="dnr" {% if patient.dnr %}checked{% endif %}><br>
-
-        <label for="insuranceCheck">Insurance Check:</label>
-        <input type="checkbox" id="insuranceCheck" name="insuranceCheck" {% if patient.insuranceCheck %}checked{% endif %}><br>
-
-        <button type="submit">Update Patient</button>
+        <label for="id">Search by Patient ID:</label>
+        <input type="number" name="id" id="id" required>
+        <button type="submit">Search</button>
     </form>
+
+    {% if patient is not None %}
+        <h2>Edit Patient Information</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="id" value="{{ patient.patientID }}">
+            
+            <div class="form-group">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" name="firstName" value="{{ patient.firstName }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" name="lastName" value="{{ patient.lastName }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="dateOfBirth">Date of Birth:</label>
+                <input type="date" id="dateOfBirth" name="dateOfBirth" value="{{ patient.dateOfBirth|date:'Y-m-d' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="sex">Sex:</label>
+                <input type="text" id="sex" name="sex" value="{{ patient.sex }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="height">Height:</label>
+                <input type="number" id="height" name="height" value="{{ patient.height }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="weight">Weight:</label>
+                <input type="number" id="weight" name="weight" value="{{ patient.weight }}" required>
+            </div>
+            
+            <div class="form-check">
+                <input type="checkbox" id="dnr" name="dnr" {% if patient.dnr %}checked{% endif %}>
+                <label for="dnr">Do Not Resuscitate</label>
+            </div>
+            
+            <div class="form-check">
+                <input type="checkbox" id="insuranceCheck" name="insuranceCheck" {% if patient.insuranceCheck %}checked{% endif %}>
+                <label for="insuranceCheck">Insurance Verified</label>
+            </div>
+            
+            <button type="submit" class="btn">Update Patient</button>
+        </form>        
+    {% elif id is not None %}
+        <p style="text-align: center; color: #777;">No patient found with ID {{ id }}.</p>
+    {% endif %}
 </body>
 </html>
