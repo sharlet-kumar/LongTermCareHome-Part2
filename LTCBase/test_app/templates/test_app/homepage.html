@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+</head>
+<body>
+    <h1>Welcome to the Long Term Care Management System</h1>
+    <ul>
+        <li><a href="{% url 'add_patient' %}">Add Patient</a></li>
+        <li><a href="{% url 'update_patient' patient_id=1 %}">Update Patient</a> (Example patient ID: 1)</li>
+        <li><a href="{% url 'search_patients_over_age' %}">Search Patients Over Age</a></li>
+        <li><a href="{% url 'add_medication' %}">Add Medication</a></li>
+        <li><a href="{% url 'add_condition' %}">Add Medication Condition</a></li>
+        <li><a href="{% url 'filter_medications' %}">Filter Medications by Condition</a></li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Condition</title>
+</head>
+<body>
+    <h1>Add Condition</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="medID">Select Medication:</label>
+        <select name="medID" id="medID">
+            {% for medication in medications %}
+                <option value="{{ medication.medID }}">{{ medication.medName }}</option>
+            {% endfor %}
+        </select><br>
+        <label for="conditionName">Condition Name:</label>
+        <input type="text" name="conditionName" id="conditionName"><br>
+        <button type="submit">Add Condition</button>
+    </form>
+</body>
+</html>
