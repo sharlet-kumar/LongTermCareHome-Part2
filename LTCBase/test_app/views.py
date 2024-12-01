@@ -1,6 +1,12 @@
 from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404, redirect
+<<<<<<< HEAD
 from .models import Patient, MedsTreatCondition, Medication
+=======
+from .models import Patient
+
+from django.db import connection
+>>>>>>> f1487cfb4344e9be544e574d14d919363ef32e27
 from datetime import date
 
 health_conditions = [
@@ -63,6 +69,7 @@ def search_patients_over_age(request):
         today = date.today()
         cutoff_date = today.replace(year=today.year - age)
         patients = Patient.objects.filter(date_of_birth__lte=cutoff_date)  # Query patients over the specified age
+<<<<<<< HEAD
     return render(request, 'test_app/search_patients_over_age.html', {'patients': patients, 'age': age})
 
 def add_medication(request):
@@ -116,3 +123,49 @@ def medications_or_conditions(request):
         'health_conditions': health_conditions,
         'selected_condition': selected_condition,
     })
+=======
+    return render(request, 'search_patients_over_age.html', {'patients': patients, 'age': age})
+
+#Search a patient
+class PatientSearchForm(forms.Form):
+    search_term = forms.CharField(max_length=100, required=False, label='Search Patients')
+
+from django.shortcuts import render
+from .models import Patient
+from .forms import PatientSearchForm
+from django.db import connection
+
+def search_patients(request):
+    form = PatientSearchForm(request.GET or None)
+    results = []
+    if form.is_valid() and form.cleaned_data.get('search_term'):
+        search_term = form.cleaned_data['search_term']
+
+        # Using raw SQL (ensure it is safe from SQL injection):
+        query = """
+            SELECT * FROM test_app_patient
+            WHERE PatientID LIKE %s OR firstName LIKE %s OR lastName LIKE %s
+            OR DateOfBirth LIKE %s OR Sex LIKE %s OR Height LIKE %s OR Weight LIKE %s
+            OR AddressID LIKE %s OR DNR LIKE %s OR InsuranceCheck LIKE %s
+        """
+        search_pattern = f"%{search_term}%"
+        with connection.cursor() as cursor:
+            cursor.execute(query, [search_pattern] * 10)
+            results = cursor.fetchall()
+
+    context = {
+        'form': form,
+        'results': results,
+    }
+    return render(request, 'search_patients.html', context)
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('search/', views.search_patients, name='search_patients'),
+]
+
+
+
+>>>>>>> f1487cfb4344e9be544e574d14d919363ef32e27
