@@ -10,5 +10,10 @@
     </select><br>
     <label>Height:</label><input type="number" name="height"><br>
     <label>Weight:</label><input type="number" name="weight"><br>
+    <label for="dnr">DNR:</label>
+    <input type="checkbox" id="dnr" name="dnr" {% if patient.dnr %}checked{% endif %}><br>
+
+    <label for="insurance_check">Insurance Check:</label>
+    <input type="checkbox" id="insurance_check" name="insurance_check" {% if patient.insurance_check %}checked{% endif %}><br>
     <button type="submit">Add Patient</button>
 </form>
