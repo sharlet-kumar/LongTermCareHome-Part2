@@ -12,6 +12,6 @@ urlpatterns = [
     path('add-medication/', views.add_medication, name='add_medication'),
     path('add-condition/', views.add_condition, name='add_condition'),
     path('filter-medications/', views.filter_medications, name='filter_medications'),
-    path('medications-conditions/', views.medications_or_conditions, name='medications_or_conditions')
-
+    path('medications-conditions/', views.medications_or_conditions, name='medications_or_conditions'),
+    path('search_patients/', views.search_patients, name='search_patients'),
 ]

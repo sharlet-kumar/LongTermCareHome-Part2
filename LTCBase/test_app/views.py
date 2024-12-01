@@ -120,3 +120,44 @@ def medications_or_conditions(request):
         'selected_condition': selected_condition,
         'filter_medication': filter_medications,
     })
+
+#search patients
+def search_patients(request):
+    # Initialize empty variables for patients and search term
+    patients = None
+    search_attribute = None
+    search_value = None
+
+    if request.method == 'POST':
+        search_attribute = request.POST.get('search_attribute', '')  # Get the attribute selected by the user
+        search_value = request.POST.get('search_value', '')  # Get the value entered by the user
+        
+        # Perform search based on the selected attribute and value
+        if search_attribute == 'weight':
+            patients = Patient.objects.filter(weight=search_value)
+        elif search_attribute == 'height':
+            patients = Patient.objects.filter(height=search_value)
+        elif search_attribute == 'firstName':
+            patients = Patient.objects.filter(firstName__icontains=search_value)
+        elif search_attribute == 'lastName':
+            patients = Patient.objects.filter(lastName__icontains=search_value)
+        elif search_attribute == 'dateOfBirth':
+            # Handle date of birth search, expecting YYYY-MM-DD format
+            try:
+                dob = date.fromisoformat(search_value)
+                patients = Patient.objects.filter(dateOfBirth=dob)
+            except ValueError:
+                patients = []  # If date format is invalid, return empty result
+        elif search_attribute == 'sex':
+            patients = Patient.objects.filter(sex__icontains=search_value)
+        elif search_attribute == 'dnr':
+            patients = Patient.objects.filter(dnr=(search_value.lower() == 'on'))  # True/False
+        elif search_attribute == 'insuranceCheck':
+            patients = Patient.objects.filter(insuranceCheck=(search_value.lower() == 'on'))  # True/False
+
+    return render(request, 'test_app/search_patients.html', {
+        'patients': patients,
+        'search_attribute': search_attribute,
+        'search_value': search_value,
+    })
+
