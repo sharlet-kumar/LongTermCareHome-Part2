@@ -1,10 +1,9 @@
 from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Patient, MedsTreatCondition, Medication
+from .models import Patient, MedsTreatCondition, Medication, MedAllergyConflict, MedtoMedConflict, FoodAllergyConflict, Allergy, Food
 from datetime import date
 from django.utils.datastructures import MultiValueDictKeyError
-from django.http import HttpResponseRedirect
-
+from django.db.models import Q
 
 health_conditions = [
     'Hypertension', 'Diabetes', 'Asthma', 'Heart Disease', 'Alzheimers', 'Dementia', 'Depression',
@@ -38,31 +37,41 @@ def add_patient(request):
 
 # Update a patient
 def update_patient(request):
+    patients = Patient.objects.all()  # Retrieve all patients for the dropdown
     patient = None
-    message = None  # Variable to store both error and success messages
+    message = None
 
     # Handle GET request
     if request.method == 'GET':
-        patient_id = request.GET.get('id')  # Safely get the patient ID from GET parameters
+        patient_id = request.GET.get('id')  # Get the patient ID from the dropdown
         if patient_id:
             try:
                 patient = get_object_or_404(Patient, patientID=patient_id)
             except:
                 message = f"No patient found with ID {patient_id}."
-        return render(request, 'test_app/update_patient.html', {'patient': patient, 'message': message})
+        return render(request, 'test_app/update_patient.html', {
+            'patients': patients,
+            'patient': patient,
+            'message': message,
+        })
 
     # Handle POST request
     if request.method == 'POST':
-        patient_id = request.POST.get('id')  # Safely get the patient ID from POST data
+        patient_id = request.POST.get('id')  # Get the patient ID
         if not patient_id:
-            return render(request, 'test_app/update_patient.html', {'message': 'Patient ID is missing'})
+            return render(request, 'test_app/update_patient.html', {
+                'patients': patients,
+                'message': 'Patient ID is missing'
+            })
 
-        # Try to fetch and update the patient record
         try:
             patient = get_object_or_404(Patient, patientID=patient_id)
         except:
             message = f"No patient found with ID {patient_id}."
-            return render(request, 'test_app/update_patient.html', {'message': message})
+            return render(request, 'test_app/update_patient.html', {
+                'patients': patients,
+                'message': message
+            })
 
         # Update patient details
         patient.firstName = request.POST.get('firstName', patient.firstName)
@@ -75,12 +84,15 @@ def update_patient(request):
         patient.insuranceCheck = request.POST.get('insuranceCheck') == 'on'
         patient.save()
 
-        # Set success message
         message = f"Patient with ID {patient_id} successfully updated."
-        return render(request, 'test_app/update_patient.html', {'patient': patient, 'message': message})
+        return render(request, 'test_app/update_patient.html', {
+            'patients': patients,
+            'patient': patient,
+            'message': message,
+        })
 
-    # Render default form if no request data
-    return render(request, 'test_app/update_patient.html')
+    return render(request, 'test_app/update_patient.html', {'patients': patients})
+
 
 
 # Delete a patient
@@ -159,41 +171,115 @@ def medications_or_conditions(request):
 
 #search patients
 def search_patients(request):
-    # Initialize empty variables for patients and search term
+    search_type = request.GET.get('searchType')
+    query = request.GET.get(search_type) if search_type else None
     patients = None
-    search_attribute = None
-    search_value = None
 
-    if request.method == 'POST':
-        search_attribute = request.POST.get('search_attribute', '')  # Get the attribute selected by the user
-        search_value = request.POST.get('search_value', '')  # Get the value entered by the user
-        
-        # Perform search based on the selected attribute and value
-        if search_attribute == 'weight':
-            patients = Patient.objects.filter(weight=search_value)
-        elif search_attribute == 'height':
-            patients = Patient.objects.filter(height=search_value)
-        elif search_attribute == 'firstName':
-            patients = Patient.objects.filter(firstName__icontains=search_value)
-        elif search_attribute == 'lastName':
-            patients = Patient.objects.filter(lastName__icontains=search_value)
-        elif search_attribute == 'dateOfBirth':
-            # Handle date of birth search, expecting YYYY-MM-DD format
-            try:
-                dob = date.fromisoformat(search_value)
-                patients = Patient.objects.filter(dateOfBirth=dob)
-            except ValueError:
-                patients = []  # If date format is invalid, return empty result
-        elif search_attribute == 'sex':
-            patients = Patient.objects.filter(sex__icontains=search_value)
-        elif search_attribute == 'dnr':
-            patients = Patient.objects.filter(dnr=(search_value.lower() == 'on'))  # True/False
-        elif search_attribute == 'insuranceCheck':
-            patients = Patient.objects.filter(insuranceCheck=(search_value.lower() == 'on'))  # True/False
+    if query:
+        if search_type in ['firstName', 'lastName']:
+            patients = Patient.objects.filter(**{search_type: query})
+        elif search_type in ['height', 'weight']:
+            patients = Patient.objects.filter(**{search_type: float(query)})
+        elif search_type == 'sex':
+            patients = Patient.objects.filter(sex=query)
+        elif search_type == 'dateOfBirth':
+            patients = Patient.objects.filter(dateOfBirth__year=query.split('-')[0])
+        elif search_type == 'dnr':
+            patients = Patient.objects.filter(dnr=True)
+        elif search_type == 'insuranceCheck':
+            patients = Patient.objects.filter(insuranceCheck=True)
 
     return render(request, 'test_app/search_patients.html', {
         'patients': patients,
-        'search_attribute': search_attribute,
-        'search_value': search_value,
+        'search_type': search_type,
+        'query': query,
     })
 
+
+def check_conflicts(request):
+    conflict_type = request.GET.get('conflictType')
+    name = request.GET.get('name')
+
+    # Separate conflict results
+    med_to_med_conflicts = []
+    med_to_allergy_conflicts = []
+    allergy_to_food_conflicts = []
+
+    # Dropdown data
+    medications = Medication.objects.all()
+    allergies = Allergy.objects.all()
+    foods = Food.objects.all()
+
+    if conflict_type and name:
+        if conflict_type == 'medication':
+            # Med-to-Med Conflicts
+            med_to_med_conflicts = MedtoMedConflict.objects.filter(
+                medicationAID=name
+            ) | MedtoMedConflict.objects.filter(
+                medicationBID=name
+            )
+            # Med-to-Allergy Conflicts
+            med_to_allergy_conflicts = MedAllergyConflict.objects.filter(medID=name)
+
+        elif conflict_type == 'allergy':
+            # Med-to-Allergy Conflicts
+            med_to_allergy_conflicts = MedAllergyConflict.objects.filter(allergyName=name)
+            # Allergy-to-Food Conflicts
+            allergy_to_food_conflicts = FoodAllergyConflict.objects.filter(allergyName=name)
+
+        elif conflict_type == 'food':
+            # Allergy-to-Food Conflicts
+            allergy_to_food_conflicts = FoodAllergyConflict.objects.filter(foodname=name)
+
+    return render(request, 'test_app/conflict_checker.html', {
+        'conflict_type': conflict_type,
+        'name': name,
+        'medications': medications,
+        'allergies': allergies,
+        'foods': foods,
+        'med_to_med_conflicts': med_to_med_conflicts,
+        'med_to_allergy_conflicts': med_to_allergy_conflicts,
+        'allergy_to_food_conflicts': allergy_to_food_conflicts,
+    })
+
+def assign_medication(request):
+    patients = Patient.objects.all()
+    conditions = []
+    medications = []
+
+    selected_patient = None
+    selected_condition = None
+    message = None
+
+    if request.method == 'POST':
+        patient_id = request.POST.get('patient')
+        condition_name = request.POST.get('condition')
+
+        if patient_id:
+            selected_patient = get_object_or_404(Patient, patientID=patient_id)
+            conditions = MedsTreatCondition.objects.filter(medID=selected_patient).values_list('conditionName', flat=True)
+
+        if condition_name:
+            selected_condition = condition_name
+
+            # Get medications that treat the condition
+            condition_medications = Medication.objects.filter(
+                meds_treat_condition__conditionName=condition_name
+            ).exclude(
+                # Exclude medications conflicting with patient allergies
+                medallergyconflict__allergyName__in=selected_patient.allergies.values_list('allergyName', flat=True)
+            ).exclude(
+                # Exclude medications conflicting with other meds the patient is taking
+                medtomedconflict__medicationAID__in=selected_patient.medications.values_list('medID', flat=True)
+            )
+
+            medications = condition_medications
+
+    return render(request, 'test_app/assign_medication.html', {
+        'patients': patients,
+        'conditions': conditions,
+        'medications': medications,
+        'selected_patient': selected_patient,
+        'selected_condition': selected_condition,
+        'message': message,
+    })

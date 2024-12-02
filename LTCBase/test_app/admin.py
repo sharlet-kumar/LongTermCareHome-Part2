@@ -1,8 +1,16 @@
 from django.contrib import admin
-from .models import Patient, Medication, MedsTreatCondition
+from .models import (
+    Patient,
+    Medication,
+    MedsTreatCondition,
+    MedtoMedConflict,
+    MedAllergyConflict,
+    FoodAllergyConflict,
+    Allergy,
+    Food
+)
 
-
-# Register your models here.
+# Register existing models
 admin.site.register(Patient)
 
 @admin.register(MedsTreatCondition)
@@ -13,10 +21,41 @@ class MedsTreatConditionAdmin(admin.ModelAdmin):
 
 class MedsTreatConditionInline(admin.TabularInline):
     model = MedsTreatCondition
-    extra = 1 
+    extra = 1
 
 @admin.register(Medication)
 class MedicationAdmin(admin.ModelAdmin):
     inlines = [MedsTreatConditionInline]  # Add conditions inline
     list_display = ('medID', 'medName', 'drugClass')
     search_fields = ('medID', 'medName', 'drugClass')
+
+# Register new models
+@admin.register(MedtoMedConflict)
+class MedtoMedConflictAdmin(admin.ModelAdmin):
+    list_display = ('medicationAID', 'medicationBID', 'severity', 'conflict_check')  # Display relevant fields
+    list_filter = ('severity',)  # Enable filtering by severity
+    search_fields = ('medicationAID__medName', 'medicationBID__medName')  # Search by related medication names
+
+@admin.register(MedAllergyConflict)
+class MedAllergyConflictAdmin(admin.ModelAdmin):
+    list_display = ('medID', 'allergyName', 'conflictCheck')  # Columns to display
+    list_filter = ('conflictCheck',)  # Enable filtering by conflict check
+    search_fields = ('medID__medName', 'allergyName__allergyName')  # Search by medication name and allergy name
+
+@admin.register(FoodAllergyConflict)
+class FoodAllergyConflictAdmin(admin.ModelAdmin):
+    list_display = ('foodname', 'allergyName', 'conflictCheck')  # Columns to display
+    list_filter = ('conflictCheck',)  # Enable filtering by conflict check
+    search_fields = ('foodname__foodname', 'allergyName__allergyName')  # Search by food name and allergy name
+
+@admin.register(Allergy)
+class AllergyAdmin(admin.ModelAdmin):
+    list_display = ('allergyName', 'managementStrategy', 'seasonalconsiderations')  # Display allergy fields
+    list_filter = ('seasonalconsiderations',)  # Enable filtering by seasonal considerations
+    search_fields = ('allergyName', 'managementStrategy')  # Add search functionality
+
+@admin.register(Food)
+class FoodAdmin(admin.ModelAdmin):
+    list_display = ('foodname', 'foodgroup', 'calories', 'protein', 'fats')  # Display food fields
+    list_filter = ('foodgroup',)  # Enable filtering by food group
+    search_fields = ('foodname', 'foodgroup')  # Add search functionality

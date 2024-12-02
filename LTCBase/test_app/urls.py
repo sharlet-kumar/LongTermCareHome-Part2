@@ -14,4 +14,6 @@ urlpatterns = [
     path('filter-medications/', views.filter_medications, name='filter_medications'),
     path('medications-conditions/', views.medications_or_conditions, name='medications_or_conditions'),
     path('search_patients/', views.search_patients, name='search_patients'),
+    path('check-conflicts/', views.check_conflicts, name='check_conflicts'),
+
 ]

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Conflicts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-top: 20px;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .return-home {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            padding: 10px;
+            text-align: center;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .return-home:hover {
+            background-color: #1976D2;
+        }
+
+        .results {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .results table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results th, .results td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .results th {
+            background-color: #f4f4f4;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Conflict Checker</h1>
+      <!-- Return to Home Button -->
+      <a href="/" class="return-home">Return to Home</a>
+    <form method="GET">
+        <label for="conflictType">Select Conflict Type:</label>
+        <select id="conflictType" name="conflictType" onchange="this.form.submit()">
+            <option value="">--Select Type--</option>
+            <option value="medication" {% if conflict_type == 'medication' %}selected{% endif %}>Medication</option>
+            <option value="allergy" {% if conflict_type == 'allergy' %}selected{% endif %}>Allergy</option>
+            <option value="food" {% if conflict_type == 'food' %}selected{% endif %}>Food</option>
+        </select>
+
+        <label for="name">Select Item:</label>
+        <select id="name" name="name">
+            <option value="">--Select an Option--</option>
+            {% if conflict_type == 'medication' %}
+                {% for med in medications %}
+                    <option value="{{ med.medID }}" {% if name == med.medID %}selected{% endif %}>
+                        {{ med.medName }}
+                    </option>
+                {% endfor %}
+            {% elif conflict_type == 'allergy' %}
+                {% for allergy in allergies %}
+                    <option value="{{ allergy.allergyName }}" {% if name == allergy.allergyName %}selected{% endif %}>
+                        {{ allergy.allergyName }}
+                    </option>
+                {% endfor %}
+            {% elif conflict_type == 'food' %}
+                {% for food in foods %}
+                    <option value="{{ food.foodname }}" {% if name == food.foodname %}selected{% endif %}>
+                        {{ food.foodname }}
+                    </option>
+                {% endfor %}
+            {% endif %}
+        </select>
+
+        <button type="submit">Check Conflicts</button>
+    </form>
+
+    <div class="results">
+        <h2>Med-to-Med Conflicts</h2>
+        {% if med_to_med_conflicts %}
+            <table>
+                <tr>
+                    <th>Medication A</th>
+                    <th>Medication B</th>
+                    <th>Severity</th>
+                </tr>
+                {% for conflict in med_to_med_conflicts %}
+                    <tr>
+                        <td>{{ conflict.medicationAID.medName }}</td>
+                        <td>{{ conflict.medicationBID.medName }}</td>
+                        <td>{{ conflict.severity }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p class="no-results">No Med-to-Med Conflicts found.</p>
+        {% endif %}
+
+        <h2>Med-to-Allergy Conflicts</h2>
+        {% if med_to_allergy_conflicts %}
+            <table>
+                <tr>
+                    <th>Medication</th>
+                    <th>Allergy</th>
+                </tr>
+                {% for conflict in med_to_allergy_conflicts %}
+                    <tr>
+                        <td>{{ conflict.medID.medName }}</td>
+                        <td>{{ conflict.allergyName.allergyName }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p class="no-results">No Med-to-Allergy Conflicts found.</p>
+        {% endif %}
+
+        <h2>Allergy-to-Food Conflicts</h2>
+        {% if allergy_to_food_conflicts %}
+            <table>
+                <tr>
+                    <th>Food</th>
+                    <th>Allergy</th>
+                </tr>
+                {% for conflict in allergy_to_food_conflicts %}
+                    <tr>
+                        <td>{{ conflict.foodname.foodname }}</td>
+                        <td>{{ conflict.allergyName.allergyName }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p class="no-results">No Allergy-to-Food Conflicts found.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

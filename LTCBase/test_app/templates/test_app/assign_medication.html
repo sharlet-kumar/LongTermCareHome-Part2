@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Medication</title>
+</head>
+<body>
+    <h1>Assign Medication</h1>
+
+    <!-- Return to Home Button -->
+    <a href="/" class="return-home">Return to Home</a>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Select Patient -->
+        <label for="patient">Select Patient:</label>
+        <select name="patient" id="patient" required>
+            <option value="">-- Select Patient --</option>
+            {% for patient in patients %}
+                <option value="{{ patient.patientID }}" {% if patient == selected_patient %}selected{% endif %}>
+                    {{ patient.firstName }} {{ patient.lastName }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Select Condition -->
+        {% if conditions %}
+            <label for="condition">Select Condition:</label>
+            <select name="condition" id="condition" required>
+                <option value="">-- Select Condition --</option>
+                {% for condition in conditions %}
+                    <option value="{{ condition }}" {% if condition == selected_condition %}selected{% endif %}>
+                        {{ condition }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% endif %}
+
+        <!-- Select Medication -->
+        {% if medications %}
+            <label for="medication">Select Medication:</label>
+            <select name="medication" id="medication" required>
+                <option value="">-- Select Medication --</option>
+                {% for medication in medications %}
+                    <option value="{{ medication.medID }}">{{ medication.medName }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+
+        <button type="submit">Assign Medication</button>
+    </form>
+
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+</body>
+</html>

@@ -76,6 +76,29 @@
         .return-home:hover {
             background-color: #1976D2;
         }
+        .results {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .results table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results th, .results td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .results th {
+            background-color: #f4f4f4;
+        }
     </style>
 </head>
 <body>
@@ -84,34 +107,88 @@
 
     <h1>Search Patients</h1>
 
-<form method="post">
-    {% csrf_token %}
-    <label for="search_attribute">Search by:</label>
-    <select name="search_attribute" id="search_attribute">
-      <option value="weight" {% if search_attribute == 'weight' %} selected {% endif %}>Weight</option>
-      <option value="height" {% if search_attribute == 'height' %} selected {% endif %}>Height</option>
-      <option value="firstName" {% if search_attribute == 'firstName' %} selected {% endif %}>First Name</option>
-      <option value="lastName" {% if search_attribute == 'lastName' %} selected {% endif %}>Last Name</option>
-      <option value="dateOfBirth" {% if search_attribute == 'dateOfBirth' %} selected {% endif %}>Date of Birth</option>
-      <option value="sex" {% if search_attribute == 'sex' %} selected {% endif %}>Sex</option>
-      <option value="dnr" {% if search_attribute == 'dnr' %} selected {% endif %}>DNR</option>
-      <option value="insuranceCheck" {% if search_attribute == 'insuranceCheck' %} selected {% endif %}>Insurance Check</option>
-    </select>
+    <form method="GET" action="{% url 'search_patients' %}">
+        <label for="searchType">Select Search Field:</label>
+        <select name="searchType" id="searchType" onchange="this.form.submit()">
+            <option value="firstName" {% if request.GET.searchType == 'firstName' %}selected{% endif %}>First Name</option>
+            <option value="lastName" {% if request.GET.searchType == 'lastName' %}selected{% endif %}>Last Name</option>
+            <option value="height" {% if request.GET.searchType == 'height' %}selected{% endif %}>Height</option>
+            <option value="weight" {% if request.GET.searchType == 'weight' %}selected{% endif %}>Weight</option>
+            <option value="sex" {% if request.GET.searchType == 'sex' %}selected{% endif %}>Sex</option>
+            <option value="dateOfBirth" {% if request.GET.searchType == 'dateOfBirth' %}selected{% endif %}>Date of Birth</option>
+            <option value="dnr" {% if request.GET.searchType == 'dnr' %}selected{% endif %}>DNR</option>
+            <option value="insuranceCheck" {% if request.GET.searchType == 'insuranceCheck' %}selected{% endif %}>Insurance Check</option>
+        </select>
+        
+        {% if request.GET.searchType == 'firstName' %}
+        <label for="firstName">First Name:</label>
+        <input type="text" name="firstName" id="firstName">
+        {% elif request.GET.searchType == 'lastName' %}
+        <label for="lastName">Last Name:</label>
+        <input type="text" name="lastName" id="lastName">
+        {% elif request.GET.searchType == 'height' %}
+        <label for="height">Height (cm):</label>
+        <input type="number" name="height" id="height" step="0.1">
+        {% elif request.GET.searchType == 'weight' %}
+        <label for="weight">Weight (kg):</label>
+        <input type="number" name="weight" id="weight" step="0.1">
+        {% elif request.GET.searchType == 'sex' %}
+        <label for="sex">Sex:</label>
+        <select name="sex" id="sex">
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+        </select>
+        {% elif request.GET.searchType == 'dateOfBirth' %}
+        <label for="dateOfBirth">Date of Birth:</label>
+        <input type="date" name="dateOfBirth" id="dateOfBirth">
+        {% elif request.GET.searchType == 'dnr' %}
+        <label for="dnr">DNR:</label>
+        <input type="checkbox" name="dnr" id="dnr">
+        {% elif request.GET.searchType == 'insuranceCheck' %}
+        <label for="insuranceCheck">Insurance Check:</label>
+        <input type="checkbox" name="insuranceCheck" id="insuranceCheck">
+        {% endif %}
     
-    <label for="search_value">Search value:</label>
-    <input type="text" name="search_value" id="search_value" value="{{ search_value }}">
+        <button type="submit">Search</button>
+    </form>
     
-    <button type="submit">Search</button>
-  </form>
-  
-  {% if patients %}
-    <h2>Search Results:</h2>
-    <ul>
-      {% for patient in patients %}
-        <li>{{ patient.firstName }} {{ patient.lastName }} - {{ patient.weight }} kg - {{ patient.dateOfBirth }} </li>
-      {% endfor %}
-    </ul>
-  {% elif search_value %}
-    <p>No results found for "{{ search_value }}"</p>
-  {% endif %}
-  
+{% if patients %}
+<div class="results">
+<h2>Search Results</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Patient ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Date of Birth</th>
+            <th>Sex</th>
+            <th>Height</th>
+            <th>Weight</th>
+            <th>DNR</th>
+            <th>Insurance Check</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for patient in patients %}
+        <tr>
+            <td>{{ patient.patientID}}</td>
+            <td>{{ patient.firstName }}</td>
+            <td>{{ patient.lastName }}</td>
+            <td>{{ patient.dateOfBirth }}</td>
+            <td>{{ patient.sex }}</td>
+            <td>{{ patient.height }}</td>
+            <td>{{ patient.weight }}</td>
+            <td>{{ patient.dnr }}</td>
+            <td>{{ patient.insuranceCheck }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p>No results found for "{{ query }}" in "{{ search_type }}".</p>
+{% endif %}
+
+</body>
+</html>
