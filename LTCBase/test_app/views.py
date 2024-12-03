@@ -390,31 +390,30 @@ def assign_patient_staff(request):
     })
 
 def delete_staff(request):
-    staff_list = Staff.objects.all()  # Fetch all staff members for dropdown
+    staff_list = Staff.objects.all()
     message = None
+    error = None
 
     if request.method == 'POST':
-        staff_id = request.POST.get('staff')  # Get selected staff ID from dropdown
+        staff_id = request.POST.get('staffID')
         try:
-            # Fetch the staff member to be deleted
             staff_member = get_object_or_404(Staff, staffID=staff_id)
-            
+
             # Delete related PatientStaffCare records
-            PatientStaffCare.objects.filter(staffID=staff_member.staffID).delete()
-            
+            PatientStaffCare.objects.filter(staffID=staff_member).delete()
+
             # Delete related PatientMedication records
             PatientMedication.objects.filter(prescribing_doc=staff_member).delete()
-            
+
             # Delete the staff member
             staff_member.delete()
 
-            message = f"Staff member with ID {staff_id} and all related records successfully deleted."
-        except IntegrityError as e:
-            message = f"Database integrity error: {str(e)}"
+            message = f"Staff member {staff_member.firstName} {staff_member.lastName} and all related records successfully deleted."
         except Exception as e:
-            message = f"Error: {str(e)}"
+            error = f"Error: {str(e)}"
 
     return render(request, 'test_app/delete_staff.html', {
         'staff_list': staff_list,
-        'message': message
+        'message': message,
+        'error': error
     })

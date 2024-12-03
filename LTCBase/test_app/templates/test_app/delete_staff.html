@@ -104,6 +104,9 @@
 <body>
     <h1>Delete Staff Member</h1>
 
+    <!-- Return to Home Button -->
+    <a href="/" class="return-home">Return to Home</a>
+
     <!-- Display error or success messages -->
     {% if message %}
         <p style="color: green;">{{ message }}</p>
@@ -114,8 +117,6 @@
 
     <form method="post">
         {% csrf_token %}
-
-        <!-- Select Staff Member -->
         <label for="staffID">Select Staff Member to Delete:</label>
         <select id="staffID" name="staffID" required>
             <option value="">-- Select Staff Member --</option>
@@ -123,10 +124,8 @@
                 <option value="{{ staff.staffID }}">{{ staff.firstName }} {{ staff.lastName }} - {{ staff.position }}</option>
             {% endfor %}
         </select>
-
         <button type="submit">Delete Staff</button>
     </form>
 
-    <a href="/">Back to Homepage</a>
 </body>
 </html>

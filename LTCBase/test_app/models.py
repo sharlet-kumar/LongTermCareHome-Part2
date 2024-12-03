@@ -230,27 +230,38 @@ class PatientMedication(models.Model):
     patient = models.ForeignKey(
         'Patient',
         on_delete=models.CASCADE,
-        db_column='PatientID'
+        db_column='PatientID',
+        default='unknown'
+
     )
     medication = models.ForeignKey(
         'Medication',
         on_delete=models.CASCADE,
-        db_column='medID'
+        db_column='medID',
+        default='unknown'
     )
-    dosage = models.SmallIntegerField()
-    admin_schedule = models.CharField(max_length=40, db_column='AdminSchedule')
+    dosage = models.SmallIntegerField(default=1)  
+    admin_schedule = models.CharField(
+        max_length=40,
+        db_column='AdminSchedule',
+        default='Once a day'  
+    )
     prescribing_doc = models.ForeignKey(
         'Staff',
         on_delete=models.CASCADE,
-        db_column='prescribingDocID'
+        db_column='prescribingDocID',
+        default='Unknown' 
     )
-    id6 = models.CharField(max_length=10, primary_key=True, db_column='ID6')
+    id6 = models.CharField(
+        max_length=10,
+        primary_key=True,
+        db_column='ID6',
+        default='AUTO_GEN'  
+    )
 
     class Meta:
         db_table = 'PatientMedication'
 
-    def __str__(self):
-        return f"Patient: {self.patient}, Medication: {self.medication}"
 
     
 class MedicationAssignment(models.Model):

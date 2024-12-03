@@ -103,6 +103,9 @@
 <body>
     <h1>Assign Medication to Patient</h1>
 
+    <!-- Return to Home Button -->
+    <a href="/" class="return-home">Return to Home</a>
+
     <!-- Display error or success messages -->
     {% if message %}
         <p style="color: green;">{{ message }}</p>
@@ -168,7 +171,5 @@
             <button type="submit">Assign Medication</button>
         {% endif %}
     </form>
-
-    <a href="/">Back to Homepage</a>
 </body>
 </html>
