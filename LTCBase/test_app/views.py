@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Patient, MedsTreatCondition, Medication, MedAllergyConflict, MedtoMedConflict, FoodAllergyConflict, Allergy, Food
+from .models import Patient, MedsTreatCondition, Medication, MedAllergyConflict, MedtoMedConflict, FoodAllergyConflict, Allergy, Food, PatientCondition,PatientAllergy, MedicationAssignment, Staff
 from datetime import date
 from django.utils.datastructures import MultiValueDictKeyError
 from django.db.models import Q
@@ -242,44 +242,73 @@ def check_conflicts(request):
         'allergy_to_food_conflicts': allergy_to_food_conflicts,
     })
 
+from django.shortcuts import render, get_object_or_404
+from .models import Patient, Medication, MedsTreatCondition, MedtoMedConflict, MedAllergyConflict
+
+from django.shortcuts import render, get_object_or_404
+from .models import Patient, Medication, MedsTreatCondition, MedtoMedConflict, MedAllergyConflict, PatientCondition, PatientAllergy
+
 def assign_medication(request):
     patients = Patient.objects.all()
+    doctors = Staff.objects.filter(position__icontains='doctor')
     conditions = []
     medications = []
-
     selected_patient = None
     selected_condition = None
     message = None
+    error = None
 
     if request.method == 'POST':
-        patient_id = request.POST.get('patient')
-        condition_name = request.POST.get('condition')
-
-        if patient_id:
+        if 'patient' in request.POST:
+            patient_id = request.POST.get('patient')
             selected_patient = get_object_or_404(Patient, patientID=patient_id)
-            conditions = MedsTreatCondition.objects.filter(medID=selected_patient).values_list('conditionName', flat=True)
+            conditions = PatientCondition.objects.filter(patientID=patient_id)
 
-        if condition_name:
+        if 'condition' in request.POST:
+            condition_name = request.POST.get('condition')
             selected_condition = condition_name
+            patient_allergies = PatientAllergy.objects.filter(patientID=selected_patient.patientID).values_list('allergyName', flat=True)
+            patient_medications = Medication.objects.filter(patients=selected_patient)
 
-            # Get medications that treat the condition
-            condition_medications = Medication.objects.filter(
-                meds_treat_condition__conditionName=condition_name
-            ).exclude(
-                # Exclude medications conflicting with patient allergies
-                medallergyconflict__allergyName__in=selected_patient.allergies.values_list('allergyName', flat=True)
-            ).exclude(
-                # Exclude medications conflicting with other meds the patient is taking
-                medtomedconflict__medicationAID__in=selected_patient.medications.values_list('medID', flat=True)
-            )
+            medications = Medication.objects.filter(
+                Q(medstreatcondition__conditionName=condition_name)
+                & ~Q(medallergyconflict__allergyName__in=patient_allergies)
+                & ~Q(conflicts_as_a__medicationBID__in=patient_medications)
+                & ~Q(conflicts_as_b__medicationAID__in=patient_medications)
+            ).distinct()
 
-            medications = condition_medications
+        if 'medication' in request.POST:
+            try:
+                medication_id = request.POST.get('medication')
+                dosage = request.POST.get('dosage')
+                admin_schedule = request.POST.get('adminSchedule')
+                prescribing_doc_id = request.POST.get('prescribingDocID')
+                
+                medication = get_object_or_404(Medication, medID=medication_id)
+                prescribing_doc = get_object_or_404(Staff, staffID=prescribing_doc_id)
+                condition = get_object_or_404(PatientCondition, medicalCondition=selected_condition, patientID=selected_patient.patientID)
+
+                # Save the assignment
+                assignment = MedicationAssignment.objects.create(
+                    patient=selected_patient,
+                    medication=medication,
+                    condition=condition,
+                    dosage=dosage,
+                    adminSchedule=admin_schedule,
+                    prescribingDoctor=prescribing_doc
+                )
+                assignment.save()
+                message = f"Medication {medication.medName} successfully assigned to {selected_patient.firstName} {selected_patient.lastName}."
+            except Exception as e:
+                error = f"Error: {str(e)}"
 
     return render(request, 'test_app/assign_medication.html', {
         'patients': patients,
+        'doctors': doctors,
         'conditions': conditions,
         'medications': medications,
         'selected_patient': selected_patient,
         'selected_condition': selected_condition,
         'message': message,
+        'error': error,
     })

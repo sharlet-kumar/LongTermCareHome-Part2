@@ -10,8 +10,18 @@ class Patient(models.Model):
     weight = models.SmallIntegerField()
     dnr = models.BooleanField()
     insuranceCheck = models.BooleanField()
+    medications = models.ManyToManyField('Medication', related_name='patients', blank=True)
+    allergies = models.ManyToManyField('Allergy', through='PatientAllergy', related_name='patients', blank=True)  
+
+    medications = models.ManyToManyField(
+        'Medication',
+        through='PatientMedication',  
+        related_name='patients',
+    )
+
     def __str__(self):
         return f"{self.firstName} {self.lastName}"
+
     
     class Meta:
         db_table = 'Patient'  
@@ -148,4 +158,118 @@ class FoodAllergyConflict(models.Model):
 
     def __str__(self):
         return f"Conflict: {self.foodname} with Allergy {self.allergyName}"
+
+class PatientCondition(models.Model):
+    patientID = models.ForeignKey(
+        Patient,
+        on_delete=models.CASCADE,
+        db_column='patientID'
+    )
+    medicalCondition = models.CharField(max_length=30)
+    description = models.CharField(max_length=150, null=True, blank=True)
+    diagnosisDate = models.DateField(null=True, blank=True)
+    diagnoserID = models.ForeignKey(
+        'Staff',
+        on_delete=models.CASCADE,
+        db_column='diagnoserID',
+        null=True, blank=True
+    )
+    id4 = models.CharField(max_length=15, primary_key=True, db_column='ID4')
+
+    class Meta:
+        db_table = 'PatientCondition'
+
+    def __str__(self):
+        return f"Condition: {self.medicalCondition} for Patient {self.patientID}"
+
+
+class Staff(models.Model):
+    staffID = models.CharField(max_length=10, primary_key=True)
+    firstName = models.CharField(max_length=15, null=True, blank=True)
+    lastName = models.CharField(max_length=15, null=True, blank=True)
+    position = models.CharField(max_length=20, null=True, blank=True)
+    department = models.CharField(max_length=30, null=True, blank=True)
+
+    class Meta:
+        db_table = 'Staff'
+
+    def __str__(self):
+        return f"{self.firstName} {self.lastName} ({self.position})"
+
+class PatientAllergy(models.Model):
+    allergyName = models.ForeignKey(
+        'Allergy', 
+        on_delete=models.CASCADE, 
+        db_column='allergyName'
+    )
+    patientID = models.ForeignKey(
+        'Patient', 
+        on_delete=models.CASCADE, 
+        db_column='patientID'
+    )
+    severity = models.CharField(
+        max_length=10, 
+        choices=[('Mild', 'Mild'), ('Moderate', 'Moderate'), ('Severe', 'Severe')]
+    )
+    description = models.TextField()
+    id5 = models.CharField(
+        max_length=15, 
+        primary_key=True, 
+        db_column='ID5'
+    )
+
+    class Meta:
+        db_table = 'PatientAllergy'
+        managed = False  # If the table is already created in the database
+        unique_together = ('allergyName', 'patientID')  # To enforce uniqueness for these fields
+
+    def __str__(self):
+        return f"{self.patientID} - {self.allergyName}"
+    
+class PatientMedication(models.Model):
+    patient = models.ForeignKey(
+        'Patient',
+        on_delete=models.CASCADE,
+        db_column='PatientID'
+    )
+    medication = models.ForeignKey(
+        'Medication',
+        on_delete=models.CASCADE,
+        db_column='medID'
+    )
+    dosage = models.SmallIntegerField()
+    admin_schedule = models.CharField(max_length=40, db_column='AdminSchedule')
+    prescribing_doc = models.ForeignKey(
+        'Staff',
+        on_delete=models.CASCADE,
+        db_column='prescribingDocID'
+    )
+    id6 = models.CharField(max_length=10, primary_key=True, db_column='ID6')
+
+    class Meta:
+        db_table = 'PatientMedication'
+        managed = False  
+
+    def __str__(self):
+        return f"{self.patient} - {self.medication} - {self.prescribing_doc}"
+    
+class MedicationAssignment(models.Model):
+    assignmentID = models.AutoField(primary_key=True)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='assignments')
+    medication = models.ForeignKey(Medication, on_delete=models.CASCADE, related_name='assignments')
+    condition = models.ForeignKey(PatientCondition, on_delete=models.CASCADE, related_name='assignments')
+    dosage = models.CharField(max_length=50)
+    adminSchedule = models.CharField(max_length=50)
+    prescribingDoctor = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='assigned_medications')
+    assignmentDate = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.patient} assigned {self.medication} for {self.condition}"
+
+    class Meta:
+        db_table = 'MedicationAssignment'
+
+
+
+
 

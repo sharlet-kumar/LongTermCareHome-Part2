@@ -5,55 +5,176 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assign Medication</title>
 </head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+    }
+
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+        color: #4CAF50;
+    }
+
+    form {
+        width: 60%;
+        margin: 20px auto;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    form label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    form input, form button, form select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    form input:focus, form button:focus, form select:focus {
+        border-color: #4CAF50;
+        outline: none;
+    }
+
+    form button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    form button:hover {
+        background-color: #45a049;
+    }
+
+    .return-home {
+        display: block;
+        width: 150px;
+        margin: 20px auto;
+        padding: 10px;
+        text-align: center;
+        background-color: #2196F3;
+        color: white;
+        text-decoration: none;
+        font-size: 16px;
+        border-radius: 5px;
+    }
+
+    .return-home:hover {
+        background-color: #1976D2;
+    }
+
+    .message {
+        width: 60%;
+        margin: 20px auto;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .success {
+        background-color: #dff0d8;
+        color: #3c763d;
+        border: 1px solid #d6e9c6;
+    }
+
+    .error {
+        background-color: #f2dede;
+        color: #a94442;
+        border: 1px solid #ebccd1;
+    }
+</style>
 <body>
-    <h1>Assign Medication</h1>
+    <h1>Assign Medication to Patient</h1>
 
     <!-- Return to Home Button -->
     <a href="/" class="return-home">Return to Home</a>
 
+    <!-- Error or Success Messages -->
+    {% if message %}
+        <p class="message success">{{ message }}</p>
+    {% endif %}
+    {% if error %}
+        <p class="message error">{{ error }}</p>
+    {% endif %}
+
     <form method="POST">
         {% csrf_token %}
-        
-        <!-- Select Patient -->
+        <!-- Patient Dropdown -->
         <label for="patient">Select Patient:</label>
-        <select name="patient" id="patient" required>
+        <select id="patient" name="patient" onchange="this.form.submit()" required>
             <option value="">-- Select Patient --</option>
             {% for patient in patients %}
-                <option value="{{ patient.patientID }}" {% if patient == selected_patient %}selected{% endif %}>
+                <option value="{{ patient.patientID }}" {% if selected_patient and selected_patient.patientID == patient.patientID %}selected{% endif %}>
                     {{ patient.firstName }} {{ patient.lastName }}
                 </option>
             {% endfor %}
         </select>
 
-        <!-- Select Condition -->
+        <!-- Conditions Dropdown -->
         {% if conditions %}
             <label for="condition">Select Condition:</label>
-            <select name="condition" id="condition" required>
+            <select id="condition" name="condition" onchange="this.form.submit()" required>
                 <option value="">-- Select Condition --</option>
                 {% for condition in conditions %}
-                    <option value="{{ condition }}" {% if condition == selected_condition %}selected{% endif %}>
-                        {{ condition }}
+                    <option value="{{ condition.medicalCondition }}" {% if selected_condition and condition.medicalCondition == selected_condition %}selected{% endif %}>
+                        {{ condition.medicalCondition }}
                     </option>
                 {% endfor %}
             </select>
         {% endif %}
 
-        <!-- Select Medication -->
+        <!-- Medications Dropdown -->
         {% if medications %}
             <label for="medication">Select Medication:</label>
-            <select name="medication" id="medication" required>
+            <select id="medication" name="medication" required>
                 <option value="">-- Select Medication --</option>
                 {% for medication in medications %}
                     <option value="{{ medication.medID }}">{{ medication.medName }}</option>
                 {% endfor %}
             </select>
+
+            <!-- Dosage -->
+            <label for="dosage">Dosage (mg):</label>
+            <input type="number" id="dosage" name="dosage" required>
+
+            <!-- Admin Schedule -->
+            <label for="adminSchedule">Administration Schedule:</label>
+            <input type="text" id="adminSchedule" name="adminSchedule" required>
+
+            <!-- Prescribing Doctor -->
+            <label for="prescribingDocID">Prescribing Doctor:</label>
+            <select id="prescribingDocID" name="prescribingDocID" required>
+                <option value="">-- Select Doctor --</option>
+                {% for doctor in doctors %}
+                    <option value="{{ doctor.staffID }}">{{ doctor.firstName }} {{ doctor.lastName }} - {{ doctor.position }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Hidden Field for ID -->
+            <input type="hidden" name="id6" value="{{ generated_id }}">
         {% endif %}
 
-        <button type="submit">Assign Medication</button>
+        <!-- Submit Button -->
+        {% if medications %}
+            <button type="submit">Assign Medication</button>
+        {% endif %}
     </form>
-
-    {% if message %}
-        <p>{{ message }}</p>
-    {% endif %}
 </body>
 </html>

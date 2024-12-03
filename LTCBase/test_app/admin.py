@@ -7,7 +7,11 @@ from .models import (
     MedAllergyConflict,
     FoodAllergyConflict,
     Allergy,
-    Food
+    Food,
+    PatientCondition,
+    Staff,
+    PatientAllergy,
+    PatientMedication
 )
 
 # Register existing models
@@ -59,3 +63,28 @@ class FoodAdmin(admin.ModelAdmin):
     list_display = ('foodname', 'foodgroup', 'calories', 'protein', 'fats')  # Display food fields
     list_filter = ('foodgroup',)  # Enable filtering by food group
     search_fields = ('foodname', 'foodgroup')  # Add search functionality
+
+@admin.register(PatientCondition)
+class PatientConditionAdmin(admin.ModelAdmin):
+    list_display = ('patientID', 'medicalCondition', 'diagnosisDate', 'diagnoserID')  # Fields to display
+    list_filter = ('diagnosisDate', 'medicalCondition')  # Filtering options
+    search_fields = ('patientID__firstName', 'patientID__lastName', 'medicalCondition')  # Add search functionality
+
+@admin.register(Staff)
+class StaffAdmin(admin.ModelAdmin):
+    list_display = ('staffID', 'firstName', 'lastName', 'position', 'department')
+    search_fields = ('firstName', 'lastName', 'position', 'department')
+
+@admin.register(PatientAllergy)
+class PatientAllergyAdmin(admin.ModelAdmin):
+    list_display = ('patientID', 'allergyName', 'severity', 'description') 
+    search_fields = ('patientID__firstName', 'allergyName__allergyName')  
+    list_filter = ('severity',)
+
+@admin.register(PatientMedication)
+class PatientMedicationAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'medication', 'dosage', 'admin_schedule', 'prescribing_doc')
+    search_fields = ('patient__firstName', 'patient__lastName', 'medication__medName', 'prescribing_doc__firstName')
+
+
+
