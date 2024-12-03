@@ -37,7 +37,7 @@ CREATE TABLE `allergytreatment` (
 
 LOCK TABLES `allergytreatment` WRITE;
 /*!40000 ALTER TABLE `allergytreatment` DISABLE KEYS */;
-INSERT INTO `allergytreatment` VALUES ('Dust','Radio a interview analysis behind stuff school.','Take camera respond guess cut southern weight.'),('Latex','Decision forget center certain.','Feel budget month past indeed campaign.'),('Mold','Chair data bed laugh station.','Happy return dog again significant describe.'),('Peanuts','Stay six effort quickly receive before computer.','At everyone recent rich.'),('Pollen','Relate tell lose authority.','Most ahead term building least your trip.'),('Shellfish','Order example section whose data financial senior.','Industry certain again avoid sister.');
+INSERT INTO `allergytreatment` VALUES ('Dust','Whatever whose word including system.','Own walk along information put.'),('Latex','Win history magazine while.','Table my ten stand smile.'),('Mold','Least health anyone else up reason both.','Dog strong guy.'),('Peanuts','Than stop night debate industry yes special.','Anyone practice officer skill know production hotel.'),('Pollen','Environmental owner who professor share interesting.','Listen style among especially fly environment thank.'),('Shellfish','Pretty test design.','Group professor phone buy.');
 /*!40000 ALTER TABLE `allergytreatment` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-02 22:56:35
+-- Dump completed on 2024-12-03  0:53:19

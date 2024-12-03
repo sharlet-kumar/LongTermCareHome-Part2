@@ -36,7 +36,7 @@ CREATE TABLE `allergy` (
 
 LOCK TABLES `allergy` WRITE;
 /*!40000 ALTER TABLE `allergy` DISABLE KEYS */;
-INSERT INTO `allergy` VALUES ('Dust','Small pull outside chair work understand work.',0),('Latex','Address attorney mouth end.',0),('Mold','Care trade audience the arrive.',1),('Peanuts','Clearly suffer show goal.',0),('Pollen','Development and American draw expert cost perform.',0),('Shellfish','Born write artist thought central.',1);
+INSERT INTO `allergy` VALUES ('Dust','Dinner notice throughout ahead.',0),('Latex','No green option second.',0),('Mold','Box perhaps be size.',1),('Peanuts','Figure worry little improve relate spring sell.',1),('Pollen','Subject no both call control door thing.',0),('Shellfish','Song son spring attorney.',0);
 /*!40000 ALTER TABLE `allergy` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -49,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-02 22:56:35
+-- Dump completed on 2024-12-03  0:53:20

@@ -2,13 +2,14 @@ from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import (
     Patient, MedsTreatCondition, Medication, MedAllergyConflict, MedtoMedConflict, FoodAllergyConflict,
-      Allergy, Food, PatientCondition,PatientAllergy, MedicationAssignment, Staff, PatientStaffCare,
-      PatientMedication
+      Allergy, Food, PatientCondition,PatientAllergy, Staff, PatientStaffCare,
+      PatientMedication, StaffPhone
 )
 from datetime import date
 from django.utils.datastructures import MultiValueDictKeyError
 from django.db.models import Q
 from django.db import IntegrityError
+from django.db.models import F
 
 health_conditions = [
     'Hypertension', 'Diabetes', 'Asthma', 'Heart Disease', 'Alzheimers', 'Dementia', 'Depression',
@@ -390,30 +391,24 @@ def assign_patient_staff(request):
     })
 
 def delete_staff(request):
-    staff_list = Staff.objects.all()
     message = None
     error = None
-
+    
     if request.method == 'POST':
-        staff_id = request.POST.get('staffID')
+        staff_id = request.POST.get('staff')
         try:
-            staff_member = get_object_or_404(Staff, staffID=staff_id)
-
-            # Delete related PatientStaffCare records
-            PatientStaffCare.objects.filter(staffID=staff_member).delete()
-
-            # Delete related PatientMedication records
-            PatientMedication.objects.filter(prescribing_doc=staff_member).delete()
-
-            # Delete the staff member
-            staff_member.delete()
-
-            message = f"Staff member {staff_member.firstName} {staff_member.lastName} and all related records successfully deleted."
+            staff = get_object_or_404(Staff, staffID=staff_id)
+            staff.delete()
+            message = f"Staff member {staff.firstName} {staff.lastName} successfully deleted."
         except Exception as e:
             error = f"Error: {str(e)}"
+
+    # Fetch the updated staff list with phone numbers
+    staff_list = Staff.objects.annotate(phone=F('staffphone__phone')).all()
 
     return render(request, 'test_app/delete_staff.html', {
         'staff_list': staff_list,
         'message': message,
         'error': error
     })
+

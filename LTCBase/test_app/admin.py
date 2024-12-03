@@ -12,7 +12,8 @@ from .models import (
     Staff,
     PatientAllergy,
     PatientMedication,
-    PatientStaffCare
+    PatientStaffCare,
+    StaffPhone
 )
 
 # Register existing models
@@ -91,6 +92,11 @@ class PatientMedicationAdmin(admin.ModelAdmin):
 class PatientStaffCareAdmin(admin.ModelAdmin):
     list_display = ('staffID', 'patientID', 'staffRoleInCare', 'careStartDate', 'careEndDate')
     search_fields = ('staffID__firstName', 'staffID__lastName', 'patientID__firstName', 'patientID__lastName')
+
+@admin.register(StaffPhone)
+class StaffPhoneAdmin(admin.ModelAdmin):
+    list_display = ('staffID', 'phone')
+    search_fields = ('staffID__staffID', 'phone')
 
 
 

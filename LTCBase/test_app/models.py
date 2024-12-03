@@ -263,24 +263,6 @@ class PatientMedication(models.Model):
         db_table = 'PatientMedication'
 
 
-    
-class MedicationAssignment(models.Model):
-    assignmentID = models.AutoField(primary_key=True)
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='assignments')
-    medication = models.ForeignKey(Medication, on_delete=models.CASCADE, related_name='assignments')
-    condition = models.ForeignKey(PatientCondition, on_delete=models.CASCADE, related_name='assignments')
-    dosage = models.CharField(max_length=50)
-    adminSchedule = models.CharField(max_length=50)
-    prescribingDoctor = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='assigned_medications')
-    assignmentDate = models.DateField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'MedicationAssignment'
-
-    def __str__(self):
-        return f"{self.patient} assigned {self.medication} for {self.condition}"
-
-
 class PatientStaffCare(models.Model):
     staffID = models.ForeignKey(
         'Staff', on_delete=models.CASCADE, db_column='staffID'
@@ -299,6 +281,19 @@ class PatientStaffCare(models.Model):
 
     def __str__(self):
         return f"{self.staffID} assigned to {self.patientID}"
+
+class StaffPhone(models.Model):
+    staffID = models.ForeignKey(
+        'Staff',
+        on_delete=models.CASCADE,
+        db_column='staffID'
+    )
+    phone = models.CharField(max_length=15, db_column='phone')
+    id8 = models.CharField(max_length=15, primary_key=True, db_column='ID8')
+
+    class Meta:
+        db_table = 'StaffPhone'
+
 
 
 

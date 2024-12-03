@@ -38,7 +38,7 @@ CREATE TABLE `allergysymptoms` (
 
 LOCK TABLES `allergysymptoms` WRITE;
 /*!40000 ALTER TABLE `allergysymptoms` DISABLE KEYS */;
-INSERT INTO `allergysymptoms` VALUES ('Dust','Itchy eyes','Severe'),('Dust','Shortness of breath','Low'),('Dust','Swelling','Severe'),('Latex','Itchy eyes','Low'),('Latex','Shortness of breath','Low'),('Latex','Sneezing','Severe'),('Mold','Sneezing','Moderate'),('Mold','Swelling','Moderate'),('Peanuts','Hives','Moderate'),('Peanuts','Shortness of breath','Moderate'),('Pollen','Shortness of breath','Low'),('Shellfish','Shortness of breath','Moderate'),('Shellfish','Swelling','Low');
+INSERT INTO `allergysymptoms` VALUES ('Dust','Itchy eyes','Moderate'),('Dust','Shortness of breath','Moderate'),('Dust','Swelling','Low'),('Latex','Shortness of breath','Moderate'),('Latex','Sneezing','Severe'),('Latex','Swelling','Low'),('Mold','Sneezing','Low'),('Peanuts','Sneezing','Moderate'),('Pollen','Itchy eyes','Severe'),('Shellfish','Sneezing','Severe');
 /*!40000 ALTER TABLE `allergysymptoms` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-02 22:56:35
+-- Dump completed on 2024-12-03  0:53:20
