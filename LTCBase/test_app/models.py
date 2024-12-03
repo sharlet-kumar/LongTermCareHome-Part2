@@ -269,6 +269,25 @@ class MedicationAssignment(models.Model):
     class Meta:
         db_table = 'MedicationAssignment'
 
+class PatientStaffCare(models.Model):
+    staffID = models.ForeignKey(
+        'Staff', on_delete=models.CASCADE, db_column='staffID'
+    )
+    patientID = models.ForeignKey(
+        'Patient', on_delete=models.CASCADE, db_column='patientID'
+    )
+    staffRoleInCare = models.CharField(max_length=30)
+    careStartDate = models.DateField()
+    careEndDate = models.DateField(null=True, blank=True)
+    id7 = models.CharField(max_length=50, primary_key=True, db_column='ID7')
+
+    class Meta:
+        db_table = 'PatientStaffCare'
+        unique_together = ('staffID', 'patientID')  # Add unique constraint
+
+    def __str__(self):
+        return f"{self.staffID} assigned to {self.patientID}"
+
 
 
 

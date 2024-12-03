@@ -1,9 +1,13 @@
 from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Patient, MedsTreatCondition, Medication, MedAllergyConflict, MedtoMedConflict, FoodAllergyConflict, Allergy, Food, PatientCondition,PatientAllergy, MedicationAssignment, Staff
+from .models import (
+    Patient, MedsTreatCondition, Medication, MedAllergyConflict, MedtoMedConflict, FoodAllergyConflict,
+      Allergy, Food, PatientCondition,PatientAllergy, MedicationAssignment, Staff, PatientStaffCare
+)
 from datetime import date
 from django.utils.datastructures import MultiValueDictKeyError
 from django.db.models import Q
+from django.db import IntegrityError
 
 health_conditions = [
     'Hypertension', 'Diabetes', 'Asthma', 'Heart Disease', 'Alzheimers', 'Dementia', 'Depression',
@@ -255,35 +259,45 @@ def assign_medication(request):
     medications = []
     selected_patient = None
     selected_condition = None
+    selected_doctor = None
     message = None
     error = None
 
     if request.method == 'POST':
+        # Handle patient selection
         if 'patient' in request.POST:
-            patient_id = request.POST.get('patient')
-            selected_patient = get_object_or_404(Patient, patientID=patient_id)
-            conditions = PatientCondition.objects.filter(patientID=patient_id)
+            try:
+                patient_id = request.POST.get('patient')
+                selected_patient = get_object_or_404(Patient, patientID=patient_id)
+                conditions = PatientCondition.objects.filter(patientID=patient_id)
+            except Exception as e:
+                error = f"Error selecting patient: {str(e)}"
 
-        if 'condition' in request.POST:
-            condition_name = request.POST.get('condition')
-            selected_condition = condition_name
-            patient_allergies = PatientAllergy.objects.filter(patientID=selected_patient.patientID).values_list('allergyName', flat=True)
-            patient_medications = Medication.objects.filter(patients=selected_patient)
+        # Handle condition selection
+        if 'condition' in request.POST and selected_patient:
+            try:
+                condition_name = request.POST.get('condition')
+                selected_condition = condition_name
+                patient_allergies = PatientAllergy.objects.filter(patientID=selected_patient.patientID).values_list('allergyName', flat=True)
+                patient_medications = Medication.objects.filter(patients=selected_patient)
 
-            medications = Medication.objects.filter(
-                Q(medstreatcondition__conditionName=condition_name)
-                & ~Q(medallergyconflict__allergyName__in=patient_allergies)
-                & ~Q(conflicts_as_a__medicationBID__in=patient_medications)
-                & ~Q(conflicts_as_b__medicationAID__in=patient_medications)
-            ).distinct()
+                medications = Medication.objects.filter(
+                    Q(medstreatcondition__conditionName=condition_name)
+                    & ~Q(medallergyconflict__allergyName__in=patient_allergies)
+                    & ~Q(conflicts_as_a__medicationBID__in=patient_medications)
+                    & ~Q(conflicts_as_b__medicationAID__in=patient_medications)
+                ).distinct()
+            except Exception as e:
+                error = f"Error selecting condition: {str(e)}"
 
-        if 'medication' in request.POST:
+        # Handle medication assignment
+        if 'medication' in request.POST and selected_patient and selected_condition:
             try:
                 medication_id = request.POST.get('medication')
                 dosage = request.POST.get('dosage')
                 admin_schedule = request.POST.get('adminSchedule')
                 prescribing_doc_id = request.POST.get('prescribingDocID')
-                
+
                 medication = get_object_or_404(Medication, medID=medication_id)
                 prescribing_doc = get_object_or_404(Staff, staffID=prescribing_doc_id)
                 condition = get_object_or_404(PatientCondition, medicalCondition=selected_condition, patientID=selected_patient.patientID)
@@ -300,7 +314,7 @@ def assign_medication(request):
                 assignment.save()
                 message = f"Medication {medication.medName} successfully assigned to {selected_patient.firstName} {selected_patient.lastName}."
             except Exception as e:
-                error = f"Error: {str(e)}"
+                error = f"Error assigning medication: {str(e)}"
 
     return render(request, 'test_app/assign_medication.html', {
         'patients': patients,
@@ -309,6 +323,54 @@ def assign_medication(request):
         'medications': medications,
         'selected_patient': selected_patient,
         'selected_condition': selected_condition,
+        'selected_doctor': selected_doctor,
+        'message': message,
+        'error': error,
+    })
+
+def assign_patient_staff(request):
+    patients = Patient.objects.all()
+    staff_members = Staff.objects.all()
+    message = None
+    error = None
+
+    if request.method == 'POST':
+        try:
+            patient_id = request.POST.get('patient')
+            staff_id = request.POST.get('staff')
+            role = request.POST.get('role')
+            start_date = request.POST.get('startDate')
+            end_date = request.POST.get('endDate')
+
+            patient = get_object_or_404(Patient, patientID=patient_id)
+            staff = get_object_or_404(Staff, staffID=staff_id)
+
+            # Check for duplicate assignment
+            if PatientStaffCare.objects.filter(patientID=patient, staffID=staff).exists():
+                error = f"{staff.firstName} {staff.lastName} is already assigned to care for {patient.firstName} {patient.lastName}."
+            else:
+                # Generate a unique ID7
+                id7 = f"{patient_id}_{staff_id}_{role[:20]}".replace(" ", "_")
+
+                # Create the care assignment
+                care_assignment = PatientStaffCare.objects.create(
+                    staffID=staff,
+                    patientID=patient,
+                    staffRoleInCare=role,
+                    careStartDate=start_date,
+                    careEndDate=end_date,
+                    id7=id7,
+                )
+                care_assignment.save()
+                message = f"{staff.firstName} {staff.lastName} successfully assigned to care for {patient.firstName} {patient.lastName}."
+        except IntegrityError as e:
+            error = f"Database error: {str(e)}"
+        except Exception as e:
+            error = f"Error assigning staff: {str(e)}"
+
+    return render(request, 'test_app/assign_patient_staff.html', {
+        'patients': patients,
+        'staff_members': staff_members,
         'message': message,
         'error': error,
     })

@@ -14,7 +14,7 @@
         }
 
         header {
-            background-color: #4CAF50;
+            background-color: #5b4caf;
             color: white;
             text-align: center;
             padding: 20px;
@@ -48,7 +48,7 @@
             display: block;
             text-decoration: none;
             color: white;
-            background-color: #4CAF50;
+            background-color: #5b4caf;
             padding: 10px 20px;
             border-radius: 5px;
             text-align: center;
@@ -56,13 +56,13 @@
         }
 
         .menu a:hover {
-            background-color: #45a049;
+            background-color: #5b4caf;
         }
 
         footer {
             text-align: center;
-            padding: 20px;
-            background-color: #4CAF50;
+            padding: 0.5px;
+            background-color: #5b4caf;
             color: white;
             position: fixed;
             bottom: 0;
@@ -93,10 +93,11 @@
             <li><a href="{% url 'filter_medications' %}">Filter Medications by Condition</a></li>
             <li><a href="{% url 'search_patients' %}">Search Patients</a></li>
             <li><a href="{% url 'check_conflicts' %}" class="nav-button">Check Conflicts</a> </li>
-            <li></li><a href="{% url 'assign_medication' %}" class="btn">Assign Medication</a><li></li>
+            <li><a href="{% url 'assign_medication' %}" class="btn">Assign Medication</a></li>
+            </li><a href="{% url 'assign_patient_staff' %}" class="button">Assign Staff to Patient</a></li>
+
 
         </ul>
-    </div>
     </div>
     <footer>
         <p>Developed by <a href="#">Your Team</a></p>

@@ -143,10 +143,9 @@
         <!-- Medications Dropdown -->
         {% if medications %}
             <label for="medication">Select Medication:</label>
-            <select id="medication" name="medication" required>
-                <option value="">-- Select Medication --</option>
-                {% for medication in medications %}
-                    <option value="{{ medication.medID }}">{{ medication.medName }}</option>
+            <select name="medication" id="medication">
+                {% for med in medications %}
+                <option value="{{ med.medID }}">{{ med.medName }}</option>
                 {% endfor %}
             </select>
 
@@ -163,9 +162,12 @@
             <select id="prescribingDocID" name="prescribingDocID" required>
                 <option value="">-- Select Doctor --</option>
                 {% for doctor in doctors %}
-                    <option value="{{ doctor.staffID }}">{{ doctor.firstName }} {{ doctor.lastName }} - {{ doctor.position }}</option>
+                    <option value="{{ doctor.staffID }}" {% if doctor.staffID == selected_doctor %}selected{% endif %}>
+                        {{ doctor.firstName }} {{ doctor.lastName }} - {{ doctor.position }}
+                    </option>
                 {% endfor %}
             </select>
+            
 
             <!-- Hidden Field for ID -->
             <input type="hidden" name="id6" value="{{ generated_id }}">
