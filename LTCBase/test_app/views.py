@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import (
     Patient, MedsTreatCondition, Medication, MedAllergyConflict, MedtoMedConflict, FoodAllergyConflict,
-      Allergy, Food, PatientCondition,PatientAllergy, MedicationAssignment, Staff, PatientStaffCare
+      Allergy, Food, PatientCondition,PatientAllergy, MedicationAssignment, Staff, PatientStaffCare,
+      PatientMedication
 )
 from datetime import date
 from django.utils.datastructures import MultiValueDictKeyError
@@ -20,24 +21,46 @@ def homepage(request):
 
 
 def add_patient(request):
+    message=None
+    success=None
+    
     if request.method == 'POST':
+        patient_id = request.POST.get('patientID')
+        first_name = request.POST.get('firstName')
+        last_name = request.POST.get('lastName')
+        date_of_birth = request.POST.get('dateOfBirth')
+        sex = request.POST.get('sex')
+        height = request.POST.get('height')
+        weight = request.POST.get('weight')
+        dnr = request.POST.get('dnr') == 'on'
+        insurance_check = request.POST.get('insuranceCheck') == 'on'
+
         try:
+            # Attempt to create the patient
             Patient.objects.create(
-                patientID=request.POST['patientID'],
-                firstName=request.POST['firstName'],
-                lastName=request.POST['lastName'],
-                dateOfBirth=request.POST['dateOfBirth'],
-                sex=request.POST['sex'],
-                height=request.POST.get('height', 0),  # Default to 0 if not provided
-                weight=request.POST.get('weight', 0),  # Default to 0 if not provided
-                dnr=(request.POST.get('dnr') == 'on'),
-                insuranceCheck=(request.POST.get('insuranceCheck') == 'on')  # Default to False
+                patientID=patient_id,
+                firstName=first_name,
+                lastName=last_name,
+                dateOfBirth=date_of_birth,
+                sex=sex,
+                height=height or None,
+                weight=weight or None,
+                dnr=dnr,
+                insuranceCheck=insurance_check
             )
-            return redirect('homepage')  # Redirect to homepage after adding
-        except MultiValueDictKeyError as e:
-            # Handle missing POST data
-            return render(request, 'add_patient.html', {'error': f"Missing field: {e}"})
-    return render(request, 'test_app/add_patient.html')
+            message = "Patient successfully added."
+            success = True
+        except IntegrityError:
+            message = "Patient cannot be added. ID might already exist."
+            success = False
+        except Exception as e:
+            message = f"An error occurred: {str(e)}"
+            success = False
+
+    return render(request, 'test_app/add_patient.html', {
+        'message': message,
+        'success': success,
+    })
 
 # Update a patient
 def update_patient(request):
@@ -374,3 +397,4 @@ def assign_patient_staff(request):
         'message': message,
         'error': error,
     })
+

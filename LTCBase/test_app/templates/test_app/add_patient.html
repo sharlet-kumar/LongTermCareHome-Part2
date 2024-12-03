@@ -80,9 +80,13 @@
 </head>
 <body>
 <h1>Add Patient</h1>
-<form method="POST">
-    
-       
+<!-- Display message -->
+{% if message %}
+<div class="message {% if success %}success{% else %}error{% endif %}">
+    {{ message }}
+</div>
+{% endif %}
+<form method="POST">   
         <!-- Return to Home Button -->
         <a href="/" class="return-home">Return to Home</a>
 
