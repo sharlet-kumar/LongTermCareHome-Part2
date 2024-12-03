@@ -17,6 +17,6 @@ urlpatterns = [
     path('check-conflicts/', views.check_conflicts, name='check_conflicts'),
     path('assign-medication/', views.assign_medication, name='assign_medication'),
     path('assign-patient-staff/', views.assign_patient_staff, name='assign_patient_staff'),
-
+    path('delete-staff/', views.delete_staff, name='delete_staff'),
 
 ]

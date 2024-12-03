@@ -103,58 +103,57 @@
 <body>
     <h1>Assign Medication to Patient</h1>
 
-    <!-- Return to Home Button -->
-    <a href="/" class="return-home">Return to Home</a>
-
-    <!-- Error or Success Messages -->
+    <!-- Display error or success messages -->
     {% if message %}
-        <p class="message success">{{ message }}</p>
+        <p style="color: green;">{{ message }}</p>
     {% endif %}
     {% if error %}
-        <p class="message error">{{ error }}</p>
+        <p style="color: red;">{{ error }}</p>
     {% endif %}
 
-    <form method="POST">
+    <form method="post">
         {% csrf_token %}
-        <!-- Patient Dropdown -->
+
+        <!-- Select Patient -->
         <label for="patient">Select Patient:</label>
-        <select id="patient" name="patient" onchange="this.form.submit()" required>
+        <select id="patient" name="patient" required onchange="this.form.submit()">
             <option value="">-- Select Patient --</option>
             {% for patient in patients %}
-                <option value="{{ patient.patientID }}" {% if selected_patient and selected_patient.patientID == patient.patientID %}selected{% endif %}>
+                <option value="{{ patient.patientID }}" {% if patient == selected_patient %}selected{% endif %}>
                     {{ patient.firstName }} {{ patient.lastName }}
                 </option>
             {% endfor %}
         </select>
 
-        <!-- Conditions Dropdown -->
+        <!-- Select Condition -->
         {% if conditions %}
             <label for="condition">Select Condition:</label>
-            <select id="condition" name="condition" onchange="this.form.submit()" required>
+            <select id="condition" name="condition" required onchange="this.form.submit()">
                 <option value="">-- Select Condition --</option>
                 {% for condition in conditions %}
-                    <option value="{{ condition.medicalCondition }}" {% if selected_condition and condition.medicalCondition == selected_condition %}selected{% endif %}>
+                    <option value="{{ condition.medicalCondition }}" {% if condition.medicalCondition == selected_condition %}selected{% endif %}>
                         {{ condition.medicalCondition }}
                     </option>
                 {% endfor %}
             </select>
         {% endif %}
 
-        <!-- Medications Dropdown -->
+        <!-- Select Medication -->
         {% if medications %}
             <label for="medication">Select Medication:</label>
-            <select name="medication" id="medication">
-                {% for med in medications %}
-                <option value="{{ med.medID }}">{{ med.medName }}</option>
+            <select id="medication" name="medication" required>
+                <option value="">-- Select Medication --</option>
+                {% for medication in medications %}
+                    <option value="{{ medication.medID }}">{{ medication.medName }}</option>
                 {% endfor %}
             </select>
-
+            
             <!-- Dosage -->
-            <label for="dosage">Dosage (mg):</label>
+            <label for="dosage">Dosage:</label>
             <input type="number" id="dosage" name="dosage" required>
 
             <!-- Admin Schedule -->
-            <label for="adminSchedule">Administration Schedule:</label>
+            <label for="adminSchedule">Admin Schedule:</label>
             <input type="text" id="adminSchedule" name="adminSchedule" required>
 
             <!-- Prescribing Doctor -->
@@ -162,21 +161,14 @@
             <select id="prescribingDocID" name="prescribingDocID" required>
                 <option value="">-- Select Doctor --</option>
                 {% for doctor in doctors %}
-                    <option value="{{ doctor.staffID }}" {% if doctor.staffID == selected_doctor %}selected{% endif %}>
-                        {{ doctor.firstName }} {{ doctor.lastName }} - {{ doctor.position }}
-                    </option>
+                    <option value="{{ doctor.staffID }}">{{ doctor.firstName }} {{ doctor.lastName }} - {{ doctor.position }}</option>
                 {% endfor %}
             </select>
-            
 
-            <!-- Hidden Field for ID -->
-            <input type="hidden" name="id6" value="{{ generated_id }}">
-        {% endif %}
-
-        <!-- Submit Button -->
-        {% if medications %}
             <button type="submit">Assign Medication</button>
         {% endif %}
     </form>
+
+    <a href="/">Back to Homepage</a>
 </body>
 </html>

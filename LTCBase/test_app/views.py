@@ -282,59 +282,51 @@ def assign_medication(request):
     medications = []
     selected_patient = None
     selected_condition = None
-    selected_doctor = None
     message = None
     error = None
 
     if request.method == 'POST':
-        # Handle patient selection
+        # Step 1: Handle Patient Selection
         if 'patient' in request.POST:
-            try:
-                patient_id = request.POST.get('patient')
-                selected_patient = get_object_or_404(Patient, patientID=patient_id)
-                conditions = PatientCondition.objects.filter(patientID=patient_id)
-            except Exception as e:
-                error = f"Error selecting patient: {str(e)}"
+            patient_id = request.POST.get('patient')
+            selected_patient = get_object_or_404(Patient, patientID=patient_id)
+            conditions = PatientCondition.objects.filter(patientID=patient_id)
 
-        # Handle condition selection
-        if 'condition' in request.POST and selected_patient:
-            try:
-                condition_name = request.POST.get('condition')
-                selected_condition = condition_name
-                patient_allergies = PatientAllergy.objects.filter(patientID=selected_patient.patientID).values_list('allergyName', flat=True)
-                patient_medications = Medication.objects.filter(patients=selected_patient)
+        # Step 2: Handle Condition Selection
+        if 'condition' in request.POST:
+            condition_name = request.POST.get('condition')
+            selected_condition = condition_name
+            patient_allergies = PatientAllergy.objects.filter(patientID=selected_patient.patientID).values_list('allergyName', flat=True)
+            patient_medications = PatientMedication.objects.filter(patient=selected_patient).values_list('medication', flat=True)
 
-                medications = Medication.objects.filter(
-                    Q(medstreatcondition__conditionName=condition_name)
-                    & ~Q(medallergyconflict__allergyName__in=patient_allergies)
-                    & ~Q(conflicts_as_a__medicationBID__in=patient_medications)
-                    & ~Q(conflicts_as_b__medicationAID__in=patient_medications)
-                ).distinct()
-            except Exception as e:
-                error = f"Error selecting condition: {str(e)}"
+            medications = Medication.objects.filter(
+                Q(medstreatcondition__conditionName=condition_name)
+                & ~Q(medallergyconflict__allergyName__in=patient_allergies)
+                & ~Q(conflicts_as_a__medicationBID__in=patient_medications)
+                & ~Q(conflicts_as_b__medicationAID__in=patient_medications)
+            ).distinct()
 
-        # Handle medication assignment
-        if 'medication' in request.POST and selected_patient and selected_condition:
+        # Step 3: Handle Medication Assignment
+        if 'medication' in request.POST:
             try:
                 medication_id = request.POST.get('medication')
                 dosage = request.POST.get('dosage')
                 admin_schedule = request.POST.get('adminSchedule')
                 prescribing_doc_id = request.POST.get('prescribingDocID')
-
+                
                 medication = get_object_or_404(Medication, medID=medication_id)
                 prescribing_doc = get_object_or_404(Staff, staffID=prescribing_doc_id)
-                condition = get_object_or_404(PatientCondition, medicalCondition=selected_condition, patientID=selected_patient.patientID)
 
                 # Save the assignment
-                assignment = MedicationAssignment.objects.create(
+                assignment = PatientMedication.objects.create(
                     patient=selected_patient,
                     medication=medication,
-                    condition=condition,
                     dosage=dosage,
-                    adminSchedule=admin_schedule,
-                    prescribingDoctor=prescribing_doc
+                    admin_schedule=admin_schedule,
+                    prescribing_doc=prescribing_doc
                 )
                 assignment.save()
+
                 message = f"Medication {medication.medName} successfully assigned to {selected_patient.firstName} {selected_patient.lastName}."
             except Exception as e:
                 error = f"Error assigning medication: {str(e)}"
@@ -346,7 +338,6 @@ def assign_medication(request):
         'medications': medications,
         'selected_patient': selected_patient,
         'selected_condition': selected_condition,
-        'selected_doctor': selected_doctor,
         'message': message,
         'error': error,
     })
@@ -398,3 +389,32 @@ def assign_patient_staff(request):
         'error': error,
     })
 
+def delete_staff(request):
+    staff_list = Staff.objects.all()  # Fetch all staff members for dropdown
+    message = None
+
+    if request.method == 'POST':
+        staff_id = request.POST.get('staff')  # Get selected staff ID from dropdown
+        try:
+            # Fetch the staff member to be deleted
+            staff_member = get_object_or_404(Staff, staffID=staff_id)
+            
+            # Delete related PatientStaffCare records
+            PatientStaffCare.objects.filter(staffID=staff_member.staffID).delete()
+            
+            # Delete related PatientMedication records
+            PatientMedication.objects.filter(prescribing_doc=staff_member).delete()
+            
+            # Delete the staff member
+            staff_member.delete()
+
+            message = f"Staff member with ID {staff_id} and all related records successfully deleted."
+        except IntegrityError as e:
+            message = f"Database integrity error: {str(e)}"
+        except Exception as e:
+            message = f"Error: {str(e)}"
+
+    return render(request, 'test_app/delete_staff.html', {
+        'staff_list': staff_list,
+        'message': message
+    })

@@ -248,10 +248,10 @@ class PatientMedication(models.Model):
 
     class Meta:
         db_table = 'PatientMedication'
-        managed = False  
 
     def __str__(self):
-        return f"{self.patient} - {self.medication} - {self.prescribing_doc}"
+        return f"Patient: {self.patient}, Medication: {self.medication}"
+
     
 class MedicationAssignment(models.Model):
     assignmentID = models.AutoField(primary_key=True)
@@ -263,11 +263,12 @@ class MedicationAssignment(models.Model):
     prescribingDoctor = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='assigned_medications')
     assignmentDate = models.DateField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'MedicationAssignment'
+
     def __str__(self):
         return f"{self.patient} assigned {self.medication} for {self.condition}"
 
-    class Meta:
-        db_table = 'MedicationAssignment'
 
 class PatientStaffCare(models.Model):
     staffID = models.ForeignKey(
