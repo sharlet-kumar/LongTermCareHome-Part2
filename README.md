@@ -1,7 +1,7 @@
-# SE3309_2022_Assignment_4
+# Long-Term Care Home Database Software - Part 2
 
-This repository contains 2 folders to be used to manage your final project assignment. 
+Database software to log and manage long-term care home data, including general patient information, health conditions, medications and allergies, potential interactions between medications, and staff data.
 
-The APP folder is where you should commit all the code for your application. 
+![MySQL Badge](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=fff&style=flat-square) ![HTML5 Badge](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=fff&style=flat-square) ![Python Badge](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff&style=flat-square)
 
-The DUMP folder should contain the database .dump file required to re-create your database and ALL of it's data. 
+Features HTML front-end interface app, MySQL back-end database ([see part 1](https://github.com/sharlet-kumar/LongTermCareHome-Part1)),  and a Python script to generate data for software testing ([see part 1](https://github.com/sharlet-kumar/LongTermCareHome-Part1)).
